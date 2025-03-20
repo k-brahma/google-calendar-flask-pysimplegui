@@ -38,7 +38,7 @@ JST = ZoneInfo("Asia/Tokyo")
 def nl2br_filter(text):
     if not text:
         return text
-    return Markup(text.replace("\n", "<br>"))
+    return Markup(str(text).replace("\n", "<br>"))
 
 
 # CalendarManagerのインスタンスを作成

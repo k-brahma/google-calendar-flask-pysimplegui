@@ -198,3 +198,4 @@ docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $(pwd)/creden
 - ライセンス: GNU Lesser General Public License version 3 (LGPL-3.0)
 - LGPL-3.0 の全文は [https://www.gnu.org/licenses/lgpl-3.0.html](https://www.gnu.org/licenses/lgpl-3.0.html) で確認できます。
 - このプロジェクトで PySimpleGUI を使用していることは、GNU Lesser General Public License version 3 の条項に従ってここに明示します。PySimpleGUI の最新版ソースコードは [https://github.com/PySimpleGUI/PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI) から入手できます。
+- PySimpleGUI の使用に関する詳細なライセンス情報や制約については、上記のリンクを参照してください。

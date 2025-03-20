@@ -6,6 +6,7 @@
     <h1 class="mb-4">イベント編集</h1>
     
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <label for="summary" class="form-label">タイトル</label>
             <input type="text" class="form-control" id="summary" name="summary" value="{{ event.summary }}" required>

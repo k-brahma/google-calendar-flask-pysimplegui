@@ -35,6 +35,7 @@
     </div>
     
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <button type="submit" class="btn btn-danger">削除する</button>
             <a href="{{ url_for('event_detail', event_id=event_id) }}" class="btn btn-secondary">キャンセル</a>

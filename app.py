@@ -1,12 +1,33 @@
+import os
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
+from flask_wtf.csrf import CSRFProtect
+from markupsafe import Markup
 
 from gcal.calendar_manager import CalendarManager
 
+# .envファイルから環境変数を読み込む
+load_dotenv()
+
+# デバッグモードの設定
+DEBUG = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
+
 app = Flask(__name__)
-app.secret_key = "your_secret_key"  # セッション用の秘密鍵を設定
+
+# 環境変数からSECRET_KEYを取得し、ない場合はエラーを発生させる
+secret_key = os.environ.get("SECRET_KEY")
+if not secret_key:
+    raise RuntimeError(
+        "環境変数SECRET_KEYが設定されていません。セキュリティのため、アプリケーションを起動できません。"
+    )
+
+app.secret_key = secret_key
+
+# CSRF保護を有効化
+csrf = CSRFProtect(app)
 
 # タイムゾーンの設定
 JST = ZoneInfo("Asia/Tokyo")
@@ -16,8 +37,8 @@ JST = ZoneInfo("Asia/Tokyo")
 @app.template_filter("nl2br")
 def nl2br_filter(text):
     if not text:
-        return ""
-    return text.replace("\n", "<br>")
+        return text
+    return Markup(text.replace("\n", "<br>"))
 
 
 # CalendarManagerのインスタンスを作成
@@ -235,4 +256,4 @@ def event_delete(event_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=DEBUG)

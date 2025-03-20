@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.summary }}の削除 - Google Calendar アプリ{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">イベント削除</h1>
+    
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">確認</h4>
+        <p>以下のイベントを削除しますか？この操作は元に戻せません。</p>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ event.summary }}</h5>
+            <p class="card-text">
+                開始: 
+                {% if event.start.get('dateTime') %}
+                    {{ event.start.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
+                {% else %}
+                    {{ event.start.date }}
+                {% endif %}
+                <br>
+                終了: 
+                {% if event.end.get('dateTime') %}
+                    {{ event.end.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
+                {% else %}
+                    {{ event.end.date }}
+                {% endif %}
+            </p>
+            {% if event.location %}
+                <p class="card-text">場所: {{ event.location }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <form method="post">
+        <div class="mb-3">
+            <button type="submit" class="btn btn-danger">削除する</button>
+            <a href="{{ url_for('event_detail', event_id=event_id) }}" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+{% endblock %} 

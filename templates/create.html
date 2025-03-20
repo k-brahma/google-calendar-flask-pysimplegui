@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}イベント作成 - Google Calendar アプリ{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">新規イベント作成</h1>
+    
+    <form method="post">
+        <div class="mb-3">
+            <label for="summary" class="form-label">タイトル</label>
+            <input type="text" class="form-control" id="summary" name="summary" required>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col">
+                <label for="start_date" class="form-label">開始日</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ default_start_date }}" required>
+            </div>
+            <div class="col">
+                <label for="start_time" class="form-label">開始時間</label>
+                <input type="time" class="form-control" id="start_time" name="start_time" value="{{ default_start_time }}" required>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col">
+                <label for="end_date" class="form-label">終了日</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ default_end_date }}" required>
+            </div>
+            <div class="col">
+                <label for="end_time" class="form-label">終了時間</label>
+                <input type="time" class="form-control" id="end_time" name="end_time" value="{{ default_end_time }}" required>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label for="location" class="form-label">場所</label>
+            <input type="text" class="form-control" id="location" name="location">
+        </div>
+        
+        <div class="mb-3">
+            <label for="description" class="form-label">説明</label>
+            <textarea class="form-control" id="description" name="description" rows="5"></textarea>
+        </div>
+        
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">作成</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+{% endblock %} 

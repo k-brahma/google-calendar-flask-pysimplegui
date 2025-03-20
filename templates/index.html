@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}イベント一覧 - Google Calendar アプリ{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">イベント一覧</h1>
+    
+    <a href="{{ url_for('event_create') }}" class="btn btn-primary mb-3">新規イベント作成</a>
+    
+    {% if events %}
+        <div class="list-group">
+            {% for event in events %}
+                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ event.summary }}</h5>
+                        <small>
+                            {% if event.start.get('dateTime') %}
+                                {{ event.start.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
+                            {% else %}
+                                {{ event.start.date }}
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% if event.location %}
+                        <p class="mb-1">場所: {{ event.location }}</p>
+                    {% endif %}
+                    {% if event.description %}
+                        <small>{{ event.description|truncate(100) }}</small>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            イベントがありません。
+        </div>
+    {% endif %}
+{% endblock %} 

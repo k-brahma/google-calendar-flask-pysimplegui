@@ -187,3 +187,14 @@ docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $(pwd)/creden
 ```
 
 注意: Docker内でのGUIアプリケーションの実行は、特にWindows環境では複雑な設定が必要になります。基本的にはDockerではFlaskウェブアプリを使用し、GUIアプリケーションを直接実行することをお勧めします。 
+
+## ライセンス情報
+
+### PySimpleGUI について
+
+このプロジェクトは[PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)ライブラリを使用しています。
+
+- Copyright © 2018-2023 PySimpleGUI Development Team. All rights reserved.
+- ライセンス: GNU Lesser General Public License version 3 (LGPL-3.0)
+- LGPL-3.0 の全文は [https://www.gnu.org/licenses/lgpl-3.0.html](https://www.gnu.org/licenses/lgpl-3.0.html) で確認できます。
+- このプロジェクトで PySimpleGUI を使用していることは、GNU Lesser General Public License version 3 の条項に従ってここに明示します。PySimpleGUI の最新版ソースコードは [https://github.com/PySimpleGUI/PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI) から入手できます。

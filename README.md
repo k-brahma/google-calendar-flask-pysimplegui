@@ -1,8 +1,9 @@
-# Google Calendar 接続テスト
+# Google Calendar 操作アプリ
 
-このプロジェクトはGoogle Calendarへの接続テストを行うためのものです。
+このプロジェクトはGoogle Calendar の操作を行うデモです。
 
-Flaskを使用したウェブアプリケーションと、PySimpleGUIを使用したデスクトップGUIアプリケーションの2つのインターフェースを提供しています。どちらも同じGoogle Calendar APIを使用して、イベントの閲覧・作成・編集・削除を行うことができます。
+Flaskを使用したウェブアプリケーションと、PySimpleGUIを使用したデスクトップGUIアプリケーションの2つのインターフェースを提供しています。  
+どちらも同じGoogle Calendar APIを使用して、イベントの閲覧・作成・編集・削除を行うことができます。
 
 ## セットアップ方法
 
@@ -141,17 +142,18 @@ python gui.py
 
 ```
 calendar-gui/
-├── app.py              # Flaskアプリケーションのメインファイル
-├── gui.py              # PySimpleGUIアプリケーションのメインファイル
-├── PySimpleGUI.py      # PySimpleGUIライブラリ
-├── README.md           # このファイル
-├── requirements.txt    # 必要なライブラリリスト
-├── credentials/        # 認証情報ディレクトリ
-│   └── config.json     # 設定ファイル
-└── templates/          # Flaskテンプレートディレクトリ
-    ├── base.html       # ベーステンプレート
-    ├── index.html      # イベント一覧表示
-    ├── event.html      # イベント詳細表示
-    ├── create.html     # イベント作成フォーム
-    └── edit.html       # イベント編集フォーム
+├── app.py               # Flaskアプリケーションのメインファイル
+├── gui.py               # PySimpleGUIアプリケーションのメインファイル
+├── PySimpleGUI.py       # PySimpleGUIライブラリ
+├── README.md            # このファイル
+├── requirements.txt     # 必要なライブラリリスト
+├── credentials/         # 認証情報ディレクトリ
+│   ├── config.json      # 設定ファイル
+│   └── credentials.json # 認証情報ファイル
+└── templates/           # Flaskテンプレートディレクトリ
+    ├── base.html        # ベーステンプレート
+    ├── index.html       # イベント一覧表示
+    ├── event.html       # イベント詳細表示
+    ├── create.html      # イベント作成フォーム
+    └── edit.html        # イベント編集フォーム
 ``` 

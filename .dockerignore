@@ -1,0 +1,44 @@
+# Git関連
+.git
+.gitignore
+
+# Python関連
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+
+# 認証情報（実際の環境では別途マウントする）
+credentials/*.json
+!credentials/config-sample.json
+
+# Dockerファイル
+.dockerignore
+Dockerfile
+
+# エディタ関連
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# PySimpleGUI-4-fossリポジトリ（もし存在する場合）
+PySimpleGUI-4-foss/ 

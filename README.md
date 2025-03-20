@@ -156,4 +156,34 @@ calendar-gui/
     ├── event.html       # イベント詳細表示
     ├── create.html      # イベント作成フォーム
     └── edit.html        # イベント編集フォーム
-``` 
+```
+
+## Dockerでの実行
+
+このプロジェクトはDockerを使用して環境を簡単に構築することもできます。
+
+### Dockerイメージのビルド
+
+```bash
+docker build -t calendar-flask-gui-app .
+```
+
+### Flaskアプリケーションの実行
+
+```bash
+docker run -p 5000:5000 -v $(pwd)/credentials:/app/credentials calendar-flask-gui-app
+```
+
+Windows PowerShellの場合:
+```powershell
+docker run -p 5000:5000 -v ${PWD}/credentials:/app/credentials calendar-flask-gui-app
+```
+
+### GUIアプリケーションの実行（X11転送が必要）
+
+Linuxの場合:
+```bash
+docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $(pwd)/credentials:/app/credentials calendar-flask-gui-app python gui.py
+```
+
+注意: Docker内でのGUIアプリケーションの実行は、特にWindows環境では複雑な設定が必要になります。基本的にはDockerではFlaskウェブアプリを使用し、GUIアプリケーションを直接実行することをお勧めします。 

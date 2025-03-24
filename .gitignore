@@ -59,7 +59,9 @@ Thumbs.db
 
 # 認証情報（最重要な除外対象）
 credentials/*
-!credentials/.gitkeep
+!credentials/README.md
+*.sample
+*.example
 token.pickle
 *.pem
 client_secret.json
@@ -69,6 +71,27 @@ service_account.json
 .cache/
 
 # PyInstaller
-*.spec 
-dist/
+*.spec
+
+# PyInstaller生成ファイル
 build/
+dist/
+*.spec
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 暗号化された認証情報
+encrypted_credentials/
+encrypted_credentials.bak/
+temp_credentials/
+temp_decrypt_test
+
+# 環境変数
+.env
+
+# 一時ファイル
+*.tmp
+.DS_Store

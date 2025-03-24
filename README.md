@@ -1,201 +1,138 @@
-# Google Calendar 操作アプリ
+# Google Calendar アプリ
 
-このプロジェクトはGoogle Calendar の操作を行うデモです。
+Flaskを使用したシンプルなGoogle Calendarイベント管理アプリケーションです。サービスアカウントを使用してGoogleカレンダーのイベントを表示、作成、編集、削除できます。
 
-Flaskを使用したウェブアプリケーションと、PySimpleGUIを使用したデスクトップGUIアプリケーションの2つのインターフェースを提供しています。  
-どちらも同じGoogle Calendar APIを使用して、イベントの閲覧・作成・編集・削除を行うことができます。
+## 機能
 
-## セットアップ方法
+- Googleカレンダーのイベント一覧表示
+- イベントの詳細表示
+- 新規イベントの作成
+- 既存イベントの編集
+- イベントの削除
+- 認証情報の暗号化と保護（配布用）
 
-1. 必要なライブラリをインストールします：
+## スクリーンショット
 
-```bash
+### 認証画面
+認証情報を復号化するためのパスワードを入力します。(PyInstallerで exe 化した場合のみ)
+
+![認証画面](img/auth.png)
+
+### イベント編集画面
+イベントの詳細を編集できます。
+
+![イベント編集](img/update.png)
+
+## 前提条件
+
+- Python 3.9以上
+- Google Cloud Platformのプロジェクトとサービスアカウント
+- Google Calendar APIの有効化
+
+## インストール
+
+1. リポジトリをクローン:
+```
+git clone <リポジトリURL>
+cd demo_calendar-gui
+```
+
+2. 必要なパッケージをインストール:
+```
 pip install -r requirements.txt
 ```
 
-2. 認証情報を取得し、`credentials/credentials.json`に保存します。
-   - Google Cloud Platformで作成したプロジェクトから認証情報を取得してください。
+3. `credentials`ディレクトリに認証情報を設定:
+   - **重要**: 詳細な手順は`credentials/README.md`を参照してください
+   - 必要なファイル:
+     - サービスアカウントのJSONキーファイル（Google Cloud Platformから取得）
+     - `config.json` (カレンダー設定)
+   
+   **セキュリティ注意**: 認証情報ファイルは`.gitignore`によってリポジトリから除外されます。絶対にGitHubにコミットしないでください。
 
-## 認証の問題と解決方法
-
-認証時に「アプリはGoogle の審査プロセスを完了していません」というエラーが表示される場合：
-
-1. Google Cloud Platformのコンソールにアクセス
-2. プロジェクトを選択
-3. 「APIとサービス」→「OAuth同意画面」を選択
-4. 以下のいずれかの方法で対応：
-   - **テストユーザーを追加**: 自分のGoogleアカウントをテストユーザーとして追加
-   - **本番環境に公開**: 同意画面の設定で「本番環境に公開」を選択（公開審査が必要）
+4. 環境変数の設定:
+```
+# .envファイルを作成
+SECRET_KEY=your_secret_key_here
+FLASK_DEBUG=False
+```
 
 ## 実行方法
 
-基本的な認証情報チェック：
-```bash
-python test_calendar_connection_simple.py
+開発環境での実行:
+```
+python -m app
 ```
 
-完全な接続テスト（OAuth認証が必要）：
-```bash
-python test_calendar_connection.py
+アプリケーションが http://127.0.0.1:5000 で起動します。
+
+**注意**: 開発環境で実行する場合は、認証は必要なく、`credentials`ディレクトリの認証情報が直接使用されます。一方、exeファイルで実行する場合は、暗号化された認証情報を復号化するためのパスワード認証が必要です。
+
+## 配布用exeファイルの作成と利用
+
+### 認証情報の暗号化
+
+アプリケーションを配布する際に認証情報を保護するため、暗号化機能が実装されています。
+
+1. 暗号化モジュールのインストール:
+```
+pip install cryptography
 ```
 
-## Google Cloud Platform（GCP）でのサービスアカウント設定
-
-1. GCPコンソールでプロジェクトを作成
-2. Google Calendar APIを有効化
-3. サービスアカウントを作成（IAM & 管理 > サービスアカウント）
-4. サービスアカウントキー（JSON形式）を作成してダウンロード
-5. 共有したいGoogleカレンダーの設定で、作成したサービスアカウントのメールアドレスと共有
-
-## 認証情報の設定
-
-サービスアカウントキーを`credentials/`ディレクトリに配置し、`credentials/config.json`ファイルを設定します。
-
-config.jsonサンプル:
-```json
-{
-  "auth_settings": {
-    "impersonation_email": "your-email@example.com"
-  },
-  "calendar_settings": {
-    "timezone": "Asia/Tokyo",
-    "default_calendar_id": "primary",
-    "target_calendar_id": "your-calendar-id@group.calendar.google.com"
-  }
-}
+2. 認証情報の暗号化:
+```
+python encrypt_credentials.py
 ```
 
-## Flaskウェブアプリケーション
+このコマンドを実行すると、`credentials`ディレクトリの内容が暗号化され、`encrypted_credentials`ディレクトリに保存されます。暗号化の際にパスワードの設定を求められます。
 
-このプロジェクトのメインインターフェースとして、Flaskを使用したウェブアプリケーションを提供しています。
+### 暗号化パスワードの変更
 
-### 機能
-
-- イベント一覧表示：カレンダーから30日分のイベントを表示
-- イベント詳細表示：個別のイベント情報を表示
-- イベント作成：新規イベントの作成フォーム
-- イベント編集：既存イベントの詳細を編集
-- イベント削除：不要なイベントの削除
-
-### 実行方法
-
-Flaskアプリケーションを起動するには：
-
-```bash
-python app.py
-```
-
-ブラウザで以下のURLにアクセスします：
-```
-http://localhost:5000
-```
-
-## GUIアプリケーション
-
-補助的なインターフェースとして、PySimpleGUIを使用したデスクトップGUIアプリケーションも提供しています。
-
-### 前提条件
-
-- Python 3.11以上がインストールされていること
-- tkinterがインストールされていること（Python 3.13.2以上の場合は標準でインストール済み）
-
-### インストール手順
-
-1. リポジトリをクローンまたはダウンロードします
-
-2. 必要なライブラリをインストールします：
-```bash
-pip install -r requirements.txt
-```
-
-3. PySimpleGUIについて：
-   - このリポジトリには既に`PySimpleGUI.py`が含まれているため、追加のインストールは不要です
-   - もし問題が発生した場合は、以下のリポジトリから最新版を取得することもできます：
-     ```bash
-     git clone https://github.com/andor-pierdelacabeza/PySimpleGUI-4-foss.git
-     cp PySimpleGUI-4-foss/PySimpleGUI.py .
-     rm -rf PySimpleGUI-4-foss  # クローンしたリポジトリの削除
-     ```
-
-### 実行方法
-
-GUIアプリケーションを起動するには：
-
-```bash
-python gui.py
-```
-
-### 機能
-
-- イベント一覧の表示：カレンダーから30日分のイベントを表示
-- イベントの詳細表示：リストからイベントをクリックすると詳細を表示
-- 新規イベント作成：「新規作成」ボタンでイベントを作成
-- イベント編集：既存イベントの詳細を変更して「保存」
-- イベント削除：「削除」ボタンで選択中のイベントを削除
-
-### トラブルシューティング
-
-- **tkinterエラー**：Python 3.13.0を使用している場合、3.13.2以上にアップグレードするか、別途tkinterをインストールしてください
-- **認証エラー**：サービスアカウントキーファイルと設定ファイルが正しく配置されているか確認してください
-
-## ディレクトリ構造
+すでに暗号化された認証情報のパスワードを変更するには、以下のスクリプトを使用します：
 
 ```
-calendar-gui/
-├── app.py               # Flaskアプリケーションのメインファイル
-├── gui.py               # PySimpleGUIアプリケーションのメインファイル
-├── PySimpleGUI.py       # PySimpleGUIライブラリ
-├── README.md            # このファイル
-├── requirements.txt     # 必要なライブラリリスト
-├── credentials/         # 認証情報ディレクトリ
-│   ├── config.json      # 設定ファイル
-│   └── credentials.json # 認証情報ファイル
-└── templates/           # Flaskテンプレートディレクトリ
-    ├── base.html        # ベーステンプレート
-    ├── index.html       # イベント一覧表示
-    ├── event.html       # イベント詳細表示
-    ├── create.html      # イベント作成フォーム
-    └── edit.html        # イベント編集フォーム
+python change_password.py
 ```
 
-## Dockerでの実行
+このスクリプトを実行すると、以下の手順でパスワードが変更されます：
+1. 現在のパスワードを入力して確認
+2. 現在のパスワードで認証情報を復号化
+3. 新しいパスワードを設定
+4. 新しいパスワードで認証情報を再暗号化
 
-このプロジェクトはDockerを使用して環境を簡単に構築することもできます。
+変更前の暗号化ディレクトリは`encrypted_credentials.bak`にバックアップされます。
 
-### Dockerイメージのビルド
+### PyInstallerでのexeファイル作成
 
-```bash
-docker build -t calendar-flask-gui-app .
+1. PyInstallerのインストール:
+```
+pip install pyinstaller
 ```
 
-### Flaskアプリケーションの実行
-
-```bash
-docker run -p 5000:5000 -v $(pwd)/credentials:/app/credentials calendar-flask-gui-app
+2. 単一の実行可能ファイルを作成:
+```
+pyinstaller --onefile --add-data "templates;templates" --add-data "encrypted_credentials;encrypted_credentials" --add-data ".env;." app.py
 ```
 
-Windows PowerShellの場合:
-```powershell
-docker run -p 5000:5000 -v ${PWD}/credentials:/app/credentials calendar-flask-gui-app
-```
+3. 作成されたexeファイルは`dist`ディレクトリに保存されます。
 
-### GUIアプリケーションの実行（X11転送が必要）
+### exeファイルの使用方法
 
-Linuxの場合:
-```bash
-docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $(pwd)/credentials:/app/credentials calendar-flask-gui-app python gui.py
-```
+1. 配布されたexeファイルを実行すると、最初に認証画面が表示されます。
+2. 暗号化時に設定したパスワードを入力すると、認証情報が復号化されます。
+3. その後、コマンドラインウィンドウにFlaskサーバーが起動したことが表示されます。
+4. ブラウザを起動して `http://127.0.0.1:5000` にアクセスします。
+5. ブラウザでアクセスすると、Google Calendarのイベントを管理できるWebインターフェースが表示されます。
+6. 終了するには、コマンドラインウィンドウを閉じるか、Ctrl+Cを押してFlaskサーバーを停止してください。
 
-注意: Docker内でのGUIアプリケーションの実行は、特にWindows環境では複雑な設定が必要になります。基本的にはDockerではFlaskウェブアプリを使用し、GUIアプリケーションを直接実行することをお勧めします。 
+## セキュリティについて
 
-## ライセンス情報
+- 認証情報は暗号化されており、パスワードなしでは復号化できません。
+- 暗号化には業界標準のFernet対称暗号化方式を使用しています。
+- パスワードからキーを導出する際に、セキュアなPBKDF2-HMAC-SHA256を使用しています。
 
-### PySimpleGUI について
+## 注意事項
 
-このプロジェクトは[PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)ライブラリを使用しています。
-
-- Copyright © 2018-2023 PySimpleGUI Development Team. All rights reserved.
-- ライセンス: GNU Lesser General Public License version 3 (LGPL-3.0)
-- LGPL-3.0 の全文は [https://www.gnu.org/licenses/lgpl-3.0.html](https://www.gnu.org/licenses/lgpl-3.0.html) で確認できます。
-- このプロジェクトで PySimpleGUI を使用していることは、GNU Lesser General Public License version 3 の条項に従ってここに明示します。PySimpleGUI の最新版ソースコードは [https://github.com/PySimpleGUI/PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI) から入手できます。
-- PySimpleGUI の使用に関する詳細なライセンス情報や制約については、上記のリンクを参照してください。
+- 配布用exeファイルにパスワードを含めないでください。
+- 本番環境では適切なセキュリティポリシーに従ってパスワードを管理してください。
+- このアプリケーションはローカルでの使用を前提としています。

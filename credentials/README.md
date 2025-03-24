@@ -1,0 +1,118 @@
+# Google Calendarの認証情報の取得方法
+
+このドキュメントでは、Google Calendarアプリケーションで使用するサービスアカウントの作成と認証情報の設定方法について説明します。
+
+## 1. Google Cloud Platformプロジェクトの作成
+
+1. [Google Cloud Platform（GCP）コンソール](https://console.cloud.google.com/)にアクセスし、Googleアカウントでログインします。
+2. 画面上部の「プロジェクト選択」をクリックし、「新しいプロジェクト」を選択します。
+3. プロジェクト名（例：`calendar-app`）を入力し、「作成」をクリックします。
+4. 作成したプロジェクトを選択します。
+
+## 2. Google Calendar APIの有効化
+
+1. 左側のメニューから「APIとサービス」→「ライブラリ」を選択します。
+2. 検索バーに「Google Calendar API」と入力し、表示された結果をクリックします。
+3. 「有効にする」ボタンをクリックしてAPIを有効化します。
+
+## 3. サービスアカウントの作成
+
+1. 左側のメニューから「IAM と管理」→「サービスアカウント」を選択します。
+2. 「サービスアカウントを作成」をクリックします。
+3. サービスアカウント名（例：`calendar-service`）を入力し、「作成して続行」をクリックします。
+4. 「ロールを選択」でアクセス権を設定します。Calendar APIの場合、以下のロールが必要です：
+   - `Cloud Calendar API > Cloud Calendar API 管理者`
+5. 「完了」をクリックしてサービスアカウントを作成します。
+
+## 4. サービスアカウントキーの作成
+
+1. 作成したサービスアカウントの一覧から、対象のサービスアカウントをクリックします。
+2. 「キー」タブを選択し、「鍵を追加」→「新しい鍵を作成」をクリックします。
+3. キーのタイプとして「JSON」を選択し、「作成」をクリックします。
+4. JSONキーファイルが自動的にダウンロードされます。このファイルを安全に保管してください。
+5. ダウンロードしたJSONファイルを`credentials`ディレクトリにコピーしてください。
+
+### サービスアカウントキーのJSON形式
+
+ダウンロードされるJSONファイルは以下のような構造になっています。（注: 以下は架空の例であり、実際のキー情報とは異なります）
+
+```text
+// 注意: これはサンプル形式のみを示す架空の例です。実際の認証情報ではありません。
+{
+  "type": "service_account",
+  "project_id": "YOUR_PROJECT_ID",
+  "private_key_id": "ABCDEF1234567890...",
+  "private_key": "-----BEGIN PRIVATE KEY-----\\n...実際のキーはここに表示されます...\\n-----END PRIVATE KEY-----\\n",
+  "client_email": "example@YOUR_PROJECT_ID.iam.gserviceaccount.com",
+  "client_id": "123456789012345678901",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/example%40YOUR_PROJECT_ID.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
+```
+
+**重要**: このサンプルは構造を示す目的のみで、実際のキーとは異なります。ダウンロードした実際のJSONファイルを使用してください。
+
+## 5. Google Calendarへのアクセス設定
+
+カレンダーにアクセスするには、以下のいずれかの方法を選択してください：
+
+### 方法1: 既存のGoogleカレンダーを共有
+
+1. [Google Calendarウェブサイト](https://calendar.google.com/)にアクセスします。
+2. 左側のカレンダー一覧から対象のカレンダーの「その他」メニュー（⋮）をクリックし、「設定と共有」を選択します。
+3. 「特定のユーザーとの共有」セクションで「ユーザーを追加」をクリックします。
+4. サービスアカウントのメールアドレス（`your-service-account@your-project-id.iam.gserviceaccount.com`形式）を入力します。
+5. 権限を「予定の変更」または「すべての権限」に設定し、「送信」をクリックします。
+
+### 方法2: 新しいカレンダーを作成
+
+1. [Google Calendarウェブサイト](https://calendar.google.com/)にアクセスします。
+2. 左側の「他のカレンダー」の横にある「+」をクリックし、「新しいカレンダーを作成」を選択します。
+3. カレンダーの名前と説明を入力し、「カレンダーを作成」をクリックします。
+4. 作成したカレンダーの「設定と共有」を開き、「特定のユーザーとの共有」セクションでサービスアカウントを追加します。
+
+## 6. 設定ファイル（config.json）の作成
+
+設定ファイルとして、`credentials`ディレクトリに`config.json`ファイルを作成し、以下の内容を参考に記述してください：
+
+```text
+// 注意: これは設定ファイルのサンプル形式です。実際の値に置き換えてください。
+{
+  "auth_settings": {
+    "impersonation_email": "YOUR_EMAIL@example.com"
+  },
+  "calendar_settings": {
+    "timezone": "Asia/Tokyo",
+    "default_calendar_id": "primary",
+    "target_calendar_id": "YOUR_CALENDAR_ID@group.calendar.google.com"
+  }
+}
+```
+
+各項目の説明：
+- `impersonation_email`: あなたのGoogleアカウントのメールアドレス（オプション）
+- `timezone`: タイムゾーン（デフォルト: `Asia/Tokyo`）
+- `target_calendar_id`: アクセスするカレンダーのID
+
+カレンダーIDは以下の方法で確認できます：
+1. Googleカレンダーの設定で「カレンダーの設定と共有」を開きます。
+2. 「カレンダーの統合」セクションにある「カレンダーID」をコピーします。
+   - 通常は`your-email@gmail.com`または`random-string@group.calendar.google.com`の形式です。
+
+## 7. ファイル配置
+
+1. サービスアカウントのJSONキーファイルを`credentials`ディレクトリに配置します。
+2. `config.json`ファイルも同じディレクトリに配置します。
+3. 最終的に`credentials`ディレクトリには以下のファイルが必要です：
+   - サービスアカウントのJSONキーファイル（任意の名前）
+   - `config.json`（設定ファイル）
+
+## 注意事項
+
+- サービスアカウントキーは秘密情報です。誤ってGitリポジトリにコミットしないよう注意してください。
+- 本番環境では、適切なセキュリティポリシーに従ってキーを管理してください。
+- サービスアカウントの権限は、必要最小限に設定することをお勧めします。
+- このリポジトリでは、`credentials`ディレクトリ内のファイルは`.gitignore`によって自動的にGit管理から除外されます（このREADMEファイルを除く）。 

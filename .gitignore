@@ -66,4 +66,9 @@ client_secret.json
 service_account.json
 
 # キャッシュ
-.cache/ 
+.cache/
+
+# PyInstaller
+*.spec 
+dist/
+build/

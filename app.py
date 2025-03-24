@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -9,8 +10,23 @@ from markupsafe import Markup
 
 from gcal.calendar_manager import CalendarManager
 
+
+# PyInstallerでのリソースパス取得のためのヘルパー関数
+def resource_path(relative_path):
+    """リソースの絶対パスを取得する関数"""
+    try:
+        # PyInstallerでバンドルされている場合のパス
+        base_path = sys._MEIPASS
+    except Exception:
+        # 通常実行の場合のパス
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 # .envファイルから環境変数を読み込む
-load_dotenv()
+dotenv_path = resource_path(".env")  # リソースパス関数を使用
+load_dotenv(dotenv_path)
 
 # デバッグモードの設定
 DEBUG = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
@@ -253,6 +269,16 @@ def event_delete(event_id):
             flash("イベントの削除に失敗しました", "error")
 
     return render_template("delete.html", event=event, event_id=event_id)
+
+
+# アプリケーション起動時の環境情報をログに出力
+print(f"Working directory: {os.getcwd()}")
+try:
+    base_path = sys._MEIPASS
+    print(f"Running in PyInstaller bundle. Base path: {base_path}")
+    print(f"Contents of base path: {os.listdir(base_path)}")
+except Exception:
+    print("Running in normal Python environment")
 
 
 if __name__ == "__main__":

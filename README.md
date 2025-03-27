@@ -46,7 +46,6 @@ pip install -r requirements.txt
    - **重要**: 詳細な手順は`credentials/README.md`を参照してください
    - 必要なファイル:
      - サービスアカウントのJSONキーファイル（Google Cloud Platformから取得）
-     - `config.json` (カレンダー設定)
    
    **セキュリティ注意**: 認証情報ファイルは`.gitignore`によってリポジトリから除外されます。絶対にGitHubにコミットしないでください。
 
@@ -56,6 +55,53 @@ pip install -r requirements.txt
 SECRET_KEY=your_secret_key_here
 FLASK_DEBUG=False
 ```
+
+## 設定ファイル
+
+アプリケーションの設定には以下の2つのファイルが必要です：
+
+### 1. config.json
+
+アプリケーションの基本設定を管理します。以下のような形式で設定してください：
+
+```json
+{
+  "auth_settings": {
+    "impersonation_email": "YOUR_EMAIL@example.com"
+  },
+  "calendar_settings": {
+    "timezone": "Asia/Tokyo",
+    "default_calendar_id": "primary",
+    "target_calendar_id": "YOUR_CALENDAR_ID@group.calendar.google.com"
+  }
+}
+```
+
+各項目の説明：
+- `impersonation_email`: あなたのGoogleアカウントのメールアドレス（オプション）
+- `timezone`: タイムゾーン（デフォルト: `Asia/Tokyo`）
+- `target_calendar_id`: アクセスするカレンダーのID（`credentials/README.md`を参照して取得方法を確認してください）
+
+### 2. credentials-key.json
+
+Google Cloud Platformから取得したサービスアカウントの認証情報ファイルです。以下のような構造になっています：
+
+```json
+{
+  "type": "service_account",
+  "project_id": "YOUR_PROJECT_ID",
+  "private_key_id": "YOUR_PRIVATE_KEY_ID",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n",
+  "client_email": "YOUR_SERVICE_ACCOUNT_EMAIL",
+  "client_id": "YOUR_CLIENT_ID",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/YOUR_SERVICE_ACCOUNT_EMAIL"
+}
+```
+
+**重要**: このサンプルは構造を示す目的のみです。実際のファイルは`credentials/README.md`の手順に従ってGoogle Cloud Platformから取得してください。
 
 ## 実行方法
 

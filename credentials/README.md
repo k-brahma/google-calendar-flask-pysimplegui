@@ -1,4 +1,4 @@
-# Google Calendarの認証情報の取得方法
+# Google Calendarの認証情報の設定手順
 
 このドキュメントでは、Google Calendarアプリケーションで使用するサービスアカウントの作成と認証情報の設定方法について説明します。
 
@@ -32,29 +32,6 @@
 4. JSONキーファイルが自動的にダウンロードされます。このファイルを安全に保管してください。
 5. ダウンロードしたJSONファイルを`credentials`ディレクトリにコピーしてください。
 
-### サービスアカウントキーのJSON形式
-
-ダウンロードされるJSONファイルは以下のような構造になっています。（注: 以下は架空の例であり、実際のキー情報とは異なります）
-
-```text
-// 注意: これはサンプル形式のみを示す架空の例です。実際の認証情報ではありません。
-{
-  "type": "service_account",
-  "project_id": "YOUR_PROJECT_ID",
-  "private_key_id": "ABCDEF1234567890...",
-  "private_key": "-----BEGIN PRIVATE KEY-----\\n...実際のキーはここに表示されます...\\n-----END PRIVATE KEY-----\\n",
-  "client_email": "example@YOUR_PROJECT_ID.iam.gserviceaccount.com",
-  "client_id": "123456789012345678901",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/example%40YOUR_PROJECT_ID.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
-}
-```
-
-**重要**: このサンプルは構造を示す目的のみで、実際のキーとは異なります。ダウンロードした実際のJSONファイルを使用してください。
-
 ## 5. Google Calendarへのアクセス設定
 
 カレンダーにアクセスするには、以下のいずれかの方法を選択してください：
@@ -74,28 +51,7 @@
 3. カレンダーの名前と説明を入力し、「カレンダーを作成」をクリックします。
 4. 作成したカレンダーの「設定と共有」を開き、「特定のユーザーとの共有」セクションでサービスアカウントを追加します。
 
-## 6. 設定ファイル（config.json）の作成
-
-設定ファイルとして、`credentials`ディレクトリに`config.json`ファイルを作成し、以下の内容を参考に記述してください：
-
-```text
-// 注意: これは設定ファイルのサンプル形式です。実際の値に置き換えてください。
-{
-  "auth_settings": {
-    "impersonation_email": "YOUR_EMAIL@example.com"
-  },
-  "calendar_settings": {
-    "timezone": "Asia/Tokyo",
-    "default_calendar_id": "primary",
-    "target_calendar_id": "YOUR_CALENDAR_ID@group.calendar.google.com"
-  }
-}
-```
-
-各項目の説明：
-- `impersonation_email`: あなたのGoogleアカウントのメールアドレス（オプション）
-- `timezone`: タイムゾーン（デフォルト: `Asia/Tokyo`）
-- `target_calendar_id`: アクセスするカレンダーのID
+## 6. カレンダーIDの取得方法
 
 カレンダーIDは以下の方法で確認できます：
 1. Googleカレンダーの設定で「カレンダーの設定と共有」を開きます。
@@ -105,10 +61,8 @@
 ## 7. ファイル配置
 
 1. サービスアカウントのJSONキーファイルを`credentials`ディレクトリに配置します。
-2. `config.json`ファイルも同じディレクトリに配置します。
-3. 最終的に`credentials`ディレクトリには以下のファイルが必要です：
+2. 最終的に`credentials`ディレクトリには以下のファイルが必要です：
    - サービスアカウントのJSONキーファイル（任意の名前）
-   - `config.json`（設定ファイル）
 
 ## 注意事項
 

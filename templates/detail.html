@@ -1,54 +1,73 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ event.summary|e }} - Google Calendar アプリ{% endblock %}
+{% block title %}{{ event.summary }} - カレンダーイベント管理{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>{{ event.summary|e }}</h1>
-        <div>
-            <a href="{{ url_for('event_update', event_id=event.id) }}" class="btn btn-primary">編集</a>
-            <a href="{{ url_for('event_delete', event_id=event.id) }}" class="btn btn-danger">削除</a>
-        </div>
+    <div class="mb-4">
+        <a href="{{ url_for('index') }}" class="text-decoration-none">
+            <i class="fas fa-arrow-left me-2"></i>イベント一覧に戻る
+        </a>
     </div>
     
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">日時</h5>
-            <p class="card-text">
-                開始: 
-                {% if event.start.get('dateTime') %}
-                    {{ event.start.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
-                {% else %}
-                    {{ event.start.date }}
+    <div class="event-detail">
+        <div class="row">
+            <div class="col-md-8">
+                <h1 class="event-title">{{ event.summary }}</h1>
+                
+                <div class="event-meta">
+                    <div class="mb-2">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        <span class="fw-semibold">開始:</span> 
+                        {% if event.start.get('dateTime') %}
+                            {{ event.start.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
+                        {% else %}
+                            {{ event.start.date }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-2">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        <span class="fw-semibold">終了:</span> 
+                        {% if event.end.get('dateTime') %}
+                            {{ event.end.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
+                        {% else %}
+                            {{ event.end.date }}
+                        {% endif %}
+                    </div>
+                    
+                    {% if event.location %}
+                    <div class="mb-2">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        <span class="fw-semibold">場所:</span> {{ event.location }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if event.description %}
+                <div class="event-description">
+                    <h5 class="mb-3">詳細情報</h5>
+                    <p>{{ event.description|nl2br }}</p>
+                </div>
                 {% endif %}
-                <br>
-                終了: 
-                {% if event.end.get('dateTime') %}
-                    {{ event.end.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
-                {% else %}
-                    {{ event.end.date }}
-                {% endif %}
-            </p>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-cog me-2"></i>操作
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('event_update', event_id=event.id) }}" class="btn btn-primary">
+                                <i class="fas fa-edit me-2"></i>編集する
+                            </a>
+                            <a href="{{ url_for('event_delete', event_id=event.id) }}" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-2"></i>削除する
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
-    {% if event.location %}
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">場所</h5>
-                <p class="card-text">{{ event.location|e }}</p>
-            </div>
-        </div>
-    {% endif %}
-    
-    {% if event.description %}
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">説明</h5>
-                <p class="card-text">{{ event.description|e|nl2br }}</p>
-            </div>
-        </div>
-    {% endif %}
-    
-    <a href="{{ url_for('index') }}" class="btn btn-secondary">一覧に戻る</a>
 {% endblock %} 

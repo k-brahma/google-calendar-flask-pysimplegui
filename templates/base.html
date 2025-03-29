@@ -3,49 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Google Calendar アプリ{% endblock %}</title>
+    <title>{% block title %}カレンダーイベント管理{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
-    <style>
-        .container { margin-top: 2rem; }
-        .flash-messages { margin: 1rem 0; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Questrial&display=swap"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="wave-background"></div>
+    
+    <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Google Calendar アプリ</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/flower-icon.svg') }}" alt="Logo" width="24" height="24" class="d-inline-block align-text-top me-2">
+                カレンダーイベント
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">イベント一覧</a>
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-calendar-alt me-1"></i>イベント一覧
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('event_create') }}">イベント作成</a>
+                        <a class="nav-link" href="{{ url_for('event_create') }}">
+                            <i class="fas fa-plus-circle me-1"></i>イベント作成
+                        </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
     
-    <div class="container">
+    <div class="container py-4">
         <div class="flash-messages">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show">
                             {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
         </div>
         
-        {% block content %}{% endblock %}
+        <div class="content-wrapper">
+            {% block content %}{% endblock %}
+        </div>
+        
+        <footer class="mt-5 text-center text-muted">
+            <small>&copy; 2025 カレンダーイベント管理</small>
+        </footer>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // アラートの自動非表示
+            setTimeout(function() {
+                document.querySelectorAll('.alert').forEach(function(alert) {
+                    var bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+    </script>
 </body>
 </html> 

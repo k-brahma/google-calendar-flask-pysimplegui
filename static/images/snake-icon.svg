@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- ヘビの本体 -->
+        <path d="M10,8 C22,8 22,16 10,16 C-2,16 -2,24 10,24 C22,24 22,32 10,32 C4,32 1,29 1,26 C1,24 2,22 4,22" 
+              stroke="#4CAF50" stroke-width="4" stroke-linecap="round" fill="none" />
+        
+        <!-- ヘビの頭部 -->
+        <circle cx="10" cy="8" r="6" fill="#66BB6A" />
+        
+        <!-- 目と舌 -->
+        <circle cx="8" cy="6" r="1.5" fill="#ffffff" />
+        <circle cx="8" cy="6" r="0.7" fill="#000000" />
+        <path d="M13,8 L18,6 M18,10 L13,8" stroke="#FF5252" stroke-width="1" stroke-linecap="round" />
+        
+        <!-- 模様 -->
+        <path d="M6,16 L8,20 L10,16" stroke="#2E7D32" stroke-width="1.5" stroke-linecap="round" fill="none" />
+        <path d="M6,24 L8,28 L10,24" stroke="#2E7D32" stroke-width="1.5" stroke-linecap="round" fill="none" />
+        
+        <!-- ラインデコレーション -->
+        <line x1="40" y1="4" x2="44" y2="8" stroke="#8BC34A" stroke-width="2" stroke-linecap="round" />
+        <line x1="36" y1="8" x2="40" y2="12" stroke="#8BC34A" stroke-width="2" stroke-linecap="round" />
+        <line x1="40" y1="16" x2="44" y2="20" stroke="#8BC34A" stroke-width="2" stroke-linecap="round" />
+        
+        <!-- 円デコレーション -->
+        <circle cx="42" cy="28" r="2" fill="#A5D6A7" />
+        <circle cx="36" cy="32" r="1.5" fill="#A5D6A7" />
+        <circle cx="42" cy="36" r="1" fill="#A5D6A7" />
+    </g>
+</svg> 

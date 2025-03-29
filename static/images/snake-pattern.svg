@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="500px" height="500px" viewBox="0 0 500 500" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- 波線パターン（ヘビの動き） -->
+        <path d="M50,250 C100,150 150,350 200,250 C250,150 300,350 350,250 C400,150 450,350 500,250" 
+              stroke="#4CAF50" stroke-width="8" stroke-linecap="round" opacity="0.1" />
+        <path d="M0,100 C50,0 100,200 150,100 C200,0 250,200 300,100 C350,0 400,200 450,100" 
+              stroke="#66BB6A" stroke-width="6" stroke-linecap="round" opacity="0.1" />
+        <path d="M50,400 C100,300 150,500 200,400 C250,300 300,500 350,400 C400,300 450,500 500,400" 
+              stroke="#8BC34A" stroke-width="7" stroke-linecap="round" opacity="0.1" />
+        
+        <!-- ヘビの小さなアイコン -->
+        <g transform="translate(100, 100)" opacity="0.15">
+            <path d="M20,0 C40,0 40,15 20,15 C0,15 0,30 20,30 C40,30 40,45 20,45 C10,45 5,40 5,35 C5,32 7,30 10,30" 
+                  stroke="#2E7D32" stroke-width="5" stroke-linecap="round" fill="none" />
+            <circle cx="10" cy="5" r="2" fill="#2E7D32" />
+        </g>
+        
+        <g transform="translate(300, 200)" opacity="0.15">
+            <path d="M20,0 C40,0 40,15 20,15 C0,15 0,30 20,30 C40,30 40,45 20,45 C10,45 5,40 5,35 C5,32 7,30 10,30" 
+                  stroke="#2E7D32" stroke-width="5" stroke-linecap="round" fill="none" />
+            <circle cx="10" cy="5" r="2" fill="#2E7D32" />
+        </g>
+        
+        <g transform="translate(150, 350)" opacity="0.15">
+            <path d="M20,0 C40,0 40,15 20,15 C0,15 0,30 20,30 C40,30 40,45 20,45 C10,45 5,40 5,35 C5,32 7,30 10,30" 
+                  stroke="#2E7D32" stroke-width="5" stroke-linecap="round" fill="none" />
+            <circle cx="10" cy="5" r="2" fill="#2E7D32" />
+        </g>
+        
+        <!-- スケール（うろこ）パターン -->
+        <g opacity="0.08">
+            <circle cx="50" cy="50" r="15" fill="#4CAF50" />
+            <circle cx="100" cy="50" r="15" fill="#4CAF50" />
+            <circle cx="150" cy="50" r="15" fill="#4CAF50" />
+            <circle cx="200" cy="50" r="15" fill="#4CAF50" />
+            <circle cx="250" cy="50" r="15" fill="#4CAF50" />
+            <circle cx="300" cy="50" r="15" fill="#4CAF50" />
+            <circle cx="350" cy="50" r="15" fill="#4CAF50" />
+            <circle cx="400" cy="50" r="15" fill="#4CAF50" />
+            <circle cx="450" cy="50" r="15" fill="#4CAF50" />
+            
+            <circle cx="75" cy="85" r="15" fill="#66BB6A" />
+            <circle cx="125" cy="85" r="15" fill="#66BB6A" />
+            <circle cx="175" cy="85" r="15" fill="#66BB6A" />
+            <circle cx="225" cy="85" r="15" fill="#66BB6A" />
+            <circle cx="275" cy="85" r="15" fill="#66BB6A" />
+            <circle cx="325" cy="85" r="15" fill="#66BB6A" />
+            <circle cx="375" cy="85" r="15" fill="#66BB6A" />
+            <circle cx="425" cy="85" r="15" fill="#66BB6A" />
+            
+            <circle cx="50" cy="120" r="15" fill="#4CAF50" />
+            <circle cx="100" cy="120" r="15" fill="#4CAF50" />
+            <circle cx="150" cy="120" r="15" fill="#4CAF50" />
+            <circle cx="200" cy="120" r="15" fill="#4CAF50" />
+            <circle cx="250" cy="120" r="15" fill="#4CAF50" />
+            <circle cx="300" cy="120" r="15" fill="#4CAF50" />
+            <circle cx="350" cy="120" r="15" fill="#4CAF50" />
+            <circle cx="400" cy="120" r="15" fill="#4CAF50" />
+            <circle cx="450" cy="120" r="15" fill="#4CAF50" />
+        </g>
+    </g>
+</svg> 

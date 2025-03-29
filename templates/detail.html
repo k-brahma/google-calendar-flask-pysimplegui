@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ event.summary }} - カレンダーイベント管理{% endblock %}
+{% block title %}{{ event.summary }} - 巳年カレンダー{% endblock %}
 
 {% block content %}
     <div class="mb-4">
@@ -66,6 +66,10 @@
                             </a>
                         </div>
                     </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <img src="{{ url_for('static', filename='images/snake-icon-small.svg') }}" alt="Snake" width="40" class="snake-icon">
                 </div>
             </div>
         </div>

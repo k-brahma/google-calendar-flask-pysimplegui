@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}イベント一覧 - カレンダーイベント管理{% endblock %}
+{% block title %}イベント一覧 - 巳年カレンダー{% endblock %}
 
 {% block content %}
     <div class="row mb-4">
         <div class="col">
             <h1 class="mb-4">イベント一覧</h1>
-            <p class="text-muted">これからのイベントを管理・確認できます。</p>
+            <p class="text-muted">これからのイベントを管理・確認できます 🐍</p>
         </div>
         <div class="col-auto d-flex align-items-center">
             <a href="{{ url_for('event_create') }}" class="btn btn-primary">
@@ -52,7 +52,7 @@
         </div>
     {% else %}
         <div class="text-center py-5">
-            <img src="{{ url_for('static', filename='images/flower-icon.svg') }}" alt="No events" width="80" class="mb-3 opacity-50">
+            <img src="{{ url_for('static', filename='images/snake-icon.svg') }}" alt="No events" width="80" class="mb-3 opacity-50 snake-icon">
             <h3 class="text-muted">イベントがありません</h3>
             <p class="text-muted">新しいイベントを作成してみましょう！</p>
             <a href="{{ url_for('event_create') }}" class="btn btn-primary mt-3">

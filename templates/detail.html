@@ -4,25 +4,33 @@
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>{{ event.summary|e }}</h1>
+        <h1 class="text-center" style="color: var(--sakura-dark);">
+            <span style="font-size: 2rem;">🌸</span> {{ event.summary|e }} <span style="font-size: 2rem;">🌸</span>
+        </h1>
         <div>
-            <a href="{{ url_for('event_update', event_id=event.id) }}" class="btn btn-primary">編集</a>
-            <a href="{{ url_for('event_delete', event_id=event.id) }}" class="btn btn-danger">削除</a>
+            <a href="{{ url_for('event_update', event_id=event.id) }}" class="btn btn-primary">
+                <span style="font-size: 1.2rem;">✏️</span> 編集
+            </a>
+            <a href="{{ url_for('event_delete', event_id=event.id) }}" class="btn btn-danger">
+                <span style="font-size: 1.2rem;">🗑️</span> 削除
+            </a>
         </div>
     </div>
     
     <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title">日時</h5>
+            <h5 class="card-title" style="color: var(--sakura-dark);">
+                <span style="font-size: 1.2rem;">📅</span> 日時
+            </h5>
             <p class="card-text">
-                開始: 
+                <strong>開始:</strong> 
                 {% if event.start.get('dateTime') %}
                     {{ event.start.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
                 {% else %}
                     {{ event.start.date }}
                 {% endif %}
                 <br>
-                終了: 
+                <strong>終了:</strong> 
                 {% if event.end.get('dateTime') %}
                     {{ event.end.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
                 {% else %}
@@ -35,7 +43,9 @@
     {% if event.location %}
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title">場所</h5>
+                <h5 class="card-title" style="color: var(--sakura-dark);">
+                    <span style="font-size: 1.2rem;">📍</span> 場所
+                </h5>
                 <p class="card-text">{{ event.location|e }}</p>
             </div>
         </div>
@@ -44,11 +54,17 @@
     {% if event.description %}
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title">説明</h5>
+                <h5 class="card-title" style="color: var(--sakura-dark);">
+                    <span style="font-size: 1.2rem;">📝</span> 説明
+                </h5>
                 <p class="card-text">{{ event.description|e|nl2br }}</p>
             </div>
         </div>
     {% endif %}
     
-    <a href="{{ url_for('index') }}" class="btn btn-secondary">一覧に戻る</a>
+    <div class="text-center">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <span style="font-size: 1.2rem;">🔙</span> 一覧に戻る
+        </a>
+    </div>
 {% endblock %} 

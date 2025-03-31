@@ -7,27 +7,37 @@
   <div class="row justify-content-center">
     <div class="col-md-6">
       <div class="card">
-        <div class="card-header">
-          <h2 class="text-center">認証</h2>
+        <div class="card-header text-center" style="background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-dark)); color: white;">
+          <h2 class="mb-0">
+            <span style="font-size: 2rem;">🌸</span> 認証 <span style="font-size: 2rem;">🌸</span>
+          </h2>
         </div>
         <div class="card-body">
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
               {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
+                <div class="alert alert-{{ category }} text-center">
+                  <span style="font-size: 1.2rem;">⚠️</span> {{ message }}
+                </div>
               {% endfor %}
             {% endif %}
           {% endwith %}
 
-          <form method="post">
+          <form method="post" class="mt-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group mb-3">
-              <label for="password">認証パスワード:</label>
+            <div class="form-group mb-4">
+              <label for="password" class="form-label" style="color: var(--sakura-dark);">
+                <span style="font-size: 1.2rem;">🔑</span> 認証パスワード
+              </label>
               <input type="password" id="password" name="password" class="form-control" required>
-              <small class="form-text text-muted">認証情報を復号化するためのパスワードを入力してください。</small>
+              <small class="form-text text-muted">
+                <span style="font-size: 1.1rem;">💡</span> 認証情報を復号化するためのパスワードを入力してください。
+              </small>
             </div>
             <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary">認証</button>
+              <button type="submit" class="btn btn-primary">
+                <span style="font-size: 1.2rem;">✨</span> 認証する
+              </button>
             </div>
           </form>
         </div>

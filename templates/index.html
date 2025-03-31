@@ -3,36 +3,58 @@
 {% block title %}イベント一覧 - Google Calendar アプリ{% endblock %}
 
 {% block content %}
-    <h1 class="mb-4">イベント一覧</h1>
+    <h1 class="mb-4 text-center" style="color: var(--sakura-dark);">
+        <span style="font-size: 2rem;">🌸</span> イベント一覧 <span style="font-size: 2rem;">🌸</span>
+    </h1>
     
-    <a href="{{ url_for('event_create') }}" class="btn btn-primary mb-3">新規イベント作成</a>
+    <div class="text-center mb-4">
+        <a href="{{ url_for('event_create') }}" class="btn btn-primary">
+            <span style="font-size: 1.2rem;">✨</span> 新規イベント作成 <span style="font-size: 1.2rem;">✨</span>
+        </a>
+    </div>
     
     {% if events %}
-        <div class="list-group">
+        <div class="row">
             {% for event in events %}
-                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="list-group-item list-group-item-action">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">{{ event.summary }}</h5>
-                        <small>
-                            {% if event.start.get('dateTime') %}
-                                {{ event.start.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
-                            {% else %}
-                                {{ event.start.date }}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: var(--sakura-dark);">
+                                {{ event.summary }}
+                            </h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i>
+                                    {% if event.start.get('dateTime') %}
+                                        {{ event.start.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
+                                    {% else %}
+                                        {{ event.start.date }}
+                                    {% endif %}
+                                </small>
+                            </p>
+                            {% if event.location %}
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class="bi bi-geo-alt"></i> {{ event.location }}
+                                    </small>
+                                </p>
                             {% endif %}
-                        </small>
+                            {% if event.description %}
+                                <p class="card-text">
+                                    <small>{{ event.description|truncate(100) }}</small>
+                                </p>
+                            {% endif %}
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary btn-sm">
+                                詳細を見る
+                            </a>
+                        </div>
                     </div>
-                    {% if event.location %}
-                        <p class="mb-1">場所: {{ event.location }}</p>
-                    {% endif %}
-                    {% if event.description %}
-                        <small>{{ event.description|truncate(100) }}</small>
-                    {% endif %}
-                </a>
+                </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="alert alert-info">
-            イベントがありません。
+        <div class="alert alert-info text-center">
+            <span style="font-size: 1.5rem;">🌸</span> イベントがありません <span style="font-size: 1.5rem;">🌸</span>
         </div>
     {% endif %}
 {% endblock %} 

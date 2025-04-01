@@ -1,70 +1,101 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}{{ event.summary|e }} - Google Calendar アプリ{% endblock %}
+{% block title %}イベント詳細 - Google Calendar アプリ{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-center" style="color: var(--sakura-dark);">
-            <span style="font-size: 2rem;">🌸</span> {{ event.summary|e }} <span style="font-size: 2rem;">🌸</span>
-        </h1>
-        <div>
-            <a href="{{ url_for('event_update', event_id=event.id) }}" class="btn btn-primary">
-                <span style="font-size: 1.2rem;">✏️</span> 編集
-            </a>
-            <a href="{{ url_for('event_delete', event_id=event.id) }}" class="btn btn-danger">
-                <span style="font-size: 1.2rem;">🗑️</span> 削除
-            </a>
-        </div>
+<h1 class="mb-4">イベント詳細</h1>
+
+<div class="card kashiwa-detail-card mb-4">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">{{ event.summary }}</h5>
+        <span class="badge bg-success">{{ event.status }}</span>
     </div>
-    
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title" style="color: var(--sakura-dark);">
-                <span style="font-size: 1.2rem;">📅</span> 日時
-            </h5>
-            <p class="card-text">
-                <strong>開始:</strong> 
-                {% if event.start.get('dateTime') %}
-                    {{ event.start.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
-                {% else %}
-                    {{ event.start.date }}
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted fw-bold">日時</div>
+            <div class="col-md-9">
+                {% if event.start.dateTime %}
+                    <div>
+                        <i class="bi bi-calendar me-2"></i> <span class="fw-bold">開始:</span> 
+                        {{ event.start.dateTime|replace("T", " ")|replace("Z", "")|replace("+00:00", "") }}
+                    </div>
+                    <div class="mt-2">
+                        <i class="bi bi-calendar-check me-2"></i> <span class="fw-bold">終了:</span> 
+                        {{ event.end.dateTime|replace("T", " ")|replace("Z", "")|replace("+00:00", "") }}
+                    </div>
+                {% elif event.start.date %}
+                    <div>
+                        <i class="bi bi-calendar me-2"></i> <span class="fw-bold">開始日:</span> {{ event.start.date }}
+                    </div>
+                    <div class="mt-2">
+                        <i class="bi bi-calendar-check me-2"></i> <span class="fw-bold">終了日:</span> {{ event.end.date }}
+                    </div>
                 {% endif %}
-                <br>
-                <strong>終了:</strong> 
-                {% if event.end.get('dateTime') %}
-                    {{ event.end.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
-                {% else %}
-                    {{ event.end.date }}
-                {% endif %}
-            </p>
-        </div>
-    </div>
-    
-    {% if event.location %}
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title" style="color: var(--sakura-dark);">
-                    <span style="font-size: 1.2rem;">📍</span> 場所
-                </h5>
-                <p class="card-text">{{ event.location|e }}</p>
             </div>
         </div>
-    {% endif %}
-    
-    {% if event.description %}
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title" style="color: var(--sakura-dark);">
-                    <span style="font-size: 1.2rem;">📝</span> 説明
-                </h5>
-                <p class="card-text">{{ event.description|e|nl2br }}</p>
+
+        {% if event.location %}
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted fw-bold">場所</div>
+                <div class="col-md-9">
+                    <i class="bi bi-geo-alt me-2"></i> {{ event.location }}
+                </div>
             </div>
-        </div>
-    {% endif %}
-    
-    <div class="text-center">
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">
-            <span style="font-size: 1.2rem;">🔙</span> 一覧に戻る
-        </a>
+        {% endif %}
+
+        {% if event.description %}
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted fw-bold">詳細</div>
+                <div class="col-md-9">
+                    <div class="p-3 bg-light rounded description-box">
+                        {{ event.description|nl2br }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
+    <div class="card-footer bg-light">
+        <div class="d-flex justify-content-end">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> 戻る
+            </a>
+            <a href="{{ url_for('event_update', event_id=event.id) }}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-pencil"></i> 編集
+            </a>
+            <a href="{{ url_for('event_delete', event_id=event.id) }}" class="btn btn-outline-danger">
+                <i class="bi bi-trash"></i> 削除
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .kashiwa-detail-card {
+        border: none;
+        border-radius: 12px;
+        border-left: 6px solid var(--kashiwa-green);
+        box-shadow: 0 5px 15px rgba(42, 89, 60, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .kashiwa-detail-card::before {
+        content: "";
+        position: absolute;
+        bottom: -30px;
+        right: -30px;
+        width: 150px;
+        height: 150px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%234D8061'%3E%3Cpath d='M256 48L142.9 184.5 256 320 369.1 184.5 256 48zm-78.5 217L256 384l78.5-119-78.5-65-78.5 65z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        opacity: 0.05;
+        transform: rotate(15deg);
+        z-index: 0;
+    }
+    
+    .description-box {
+        border-left: 3px solid var(--kashiwa-green);
+        background-color: var(--kashiwa-light) !important;
+    }
+</style>
 {% endblock %} 

@@ -1,48 +1,92 @@
 {% extends "base.html" %}
 
-{% block title %}認証{% endblock %}
+{% block title %}認証 - Google Calendar アプリ{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-  <div class="row justify-content-center">
+<div class="row justify-content-center">
     <div class="col-md-6">
-      <div class="card">
-        <div class="card-header text-center" style="background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-dark)); color: white;">
-          <h2 class="mb-0">
-            <span style="font-size: 2rem;">🌸</span> 認証 <span style="font-size: 2rem;">🌸</span>
-          </h2>
-        </div>
-        <div class="card-body">
-          {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }} text-center">
-                  <span style="font-size: 1.2rem;">⚠️</span> {{ message }}
+        <div class="card kashiwa-auth-card">
+            <div class="card-body text-center">
+                <h1 class="mb-4">認証</h1>
+                
+                <div class="kashiwa-mochi-icon mb-4">
+                    <div class="leaf"></div>
+                    <div class="mochi"></div>
                 </div>
-              {% endfor %}
-            {% endif %}
-          {% endwith %}
-
-          <form method="post" class="mt-4">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group mb-4">
-              <label for="password" class="form-label" style="color: var(--sakura-dark);">
-                <span style="font-size: 1.2rem;">🔑</span> 認証パスワード
-              </label>
-              <input type="password" id="password" name="password" class="form-control" required>
-              <small class="form-text text-muted">
-                <span style="font-size: 1.1rem;">💡</span> 認証情報を復号化するためのパスワードを入力してください。
-              </small>
+                
+                <form method="post" action="{{ url_for('authenticate') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label">パスワード</label>
+                        <input type="password" class="form-control" id="password" name="password" required autofocus>
+                        <div class="form-text">認証情報を復号化するためのパスワードを入力してください。</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">認証する</button>
+                    </div>
+                </form>
             </div>
-            <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary">
-                <span style="font-size: 1.2rem;">✨</span> 認証する
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
     </div>
-  </div>
 </div>
+
+<style>
+    .kashiwa-auth-card {
+        border: none;
+        border-radius: 12px;
+        border-left: 6px solid var(--kashiwa-green);
+        box-shadow: 0 5px 15px rgba(42, 89, 60, 0.1);
+    }
+    
+    .kashiwa-mochi-icon {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+    }
+    
+    .mochi {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 50px;
+        background-color: #f3f3f3;
+        border-radius: 50% / 60% 60% 40% 40%;
+    }
+    
+    .leaf {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 60px;
+        background-color: var(--kashiwa-green);
+        border-radius: 0 50% 0 50%;
+        transform-origin: center bottom;
+        transform: translateX(-50%) rotate(45deg);
+        z-index: 2;
+    }
+    
+    .leaf::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100px;
+        height: 60px;
+        background-color: var(--kashiwa-green);
+        border-radius: 50% 0 50% 0;
+        transform: rotate(270deg);
+    }
+    
+    .form-control:focus {
+        border-color: var(--kashiwa-green);
+        box-shadow: 0 0 0 0.25rem rgba(77, 128, 97, 0.25);
+    }
+</style>
 {% endblock %} 

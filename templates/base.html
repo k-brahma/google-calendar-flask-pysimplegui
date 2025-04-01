@@ -7,13 +7,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <style>
         :root {
-            --sakura-pink: #FFB7C5;
-            --sakura-light: #FFE4E1;
-            --sakura-dark: #DB7093;
+            --kashiwa-green: #4D8061;
+            --kashiwa-light: #E8F3E8;
+            --kashiwa-dark: #2A593C;
+            --kashiwa-red: #A94442;
+            --anko-brown: #8B4513;
         }
 
         body {
-            background-color: var(--sakura-light);
+            background-color: var(--kashiwa-light);
             font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
         }
 
@@ -22,7 +24,8 @@
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
             padding: 2rem;
-            box-shadow: 0 0 20px rgba(219, 112, 147, 0.2);
+            box-shadow: 0 0 20px rgba(42, 89, 60, 0.2);
+            border: 2px solid var(--kashiwa-green);
         }
 
         .flash-messages {
@@ -30,8 +33,8 @@
         }
 
         .navbar {
-            background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-dark)) !important;
-            box-shadow: 0 2px 10px rgba(219, 112, 147, 0.3);
+            background: linear-gradient(135deg, var(--kashiwa-green), var(--kashiwa-dark)) !important;
+            box-shadow: 0 2px 10px rgba(42, 89, 60, 0.3);
         }
 
         .navbar-brand {
@@ -45,25 +48,26 @@
         }
 
         .nav-link:hover {
-            color: var(--sakura-light) !important;
+            color: var(--kashiwa-light) !important;
             transform: translateY(-2px);
         }
 
         .btn-primary {
-            background-color: var(--sakura-dark);
-            border-color: var(--sakura-dark);
+            background-color: var(--kashiwa-dark);
+            border-color: var(--kashiwa-dark);
         }
 
         .btn-primary:hover {
-            background-color: var(--sakura-pink);
-            border-color: var(--sakura-pink);
+            background-color: var(--kashiwa-green);
+            border-color: var(--kashiwa-green);
         }
 
         .card {
             border: none;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(219, 112, 147, 0.1);
+            box-shadow: 0 4px 15px rgba(42, 89, 60, 0.1);
             transition: transform 0.3s ease;
+            border-left: 5px solid var(--kashiwa-green);
         }
 
         .card:hover {
@@ -75,24 +79,24 @@
             border: none;
         }
 
-        .sakura-decoration {
+        .kashiwa-decoration {
             position: fixed;
             width: 100%;
             height: 100%;
             pointer-events: none;
             z-index: -1;
             opacity: 0.1;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23DB7093'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234D8061'%3E%3Cpath d='M17.09 19.15 12 15.19l-5.09 3.96 1.96-6.08L4 8.82l6.39-.54L12 2.5l1.61 5.78 6.39.54-4.87 4.25z'/%3E%3C/svg%3E");
             background-size: 50px 50px;
             background-repeat: repeat;
         }
     </style>
 </head>
 <body>
-    <div class="sakura-decoration"></div>
+    <div class="kashiwa-decoration"></div>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">🌸 Google Calendar アプリ</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">🍃 Google Calendar アプリ</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>

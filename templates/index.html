@@ -3,58 +3,85 @@
 {% block title %}イベント一覧 - Google Calendar アプリ{% endblock %}
 
 {% block content %}
-    <h1 class="mb-4 text-center" style="color: var(--sakura-dark);">
-        <span style="font-size: 2rem;">🌸</span> イベント一覧 <span style="font-size: 2rem;">🌸</span>
-    </h1>
+    <h1 class="mb-4">イベント一覧</h1>
     
-    <div class="text-center mb-4">
+    <div class="mb-4">
         <a href="{{ url_for('event_create') }}" class="btn btn-primary">
-            <span style="font-size: 1.2rem;">✨</span> 新規イベント作成 <span style="font-size: 1.2rem;">✨</span>
+            <i class="bi bi-plus"></i> 新規イベント作成
         </a>
     </div>
     
     {% if events %}
-        <div class="row">
+        <div class="row row-cols-1 row-cols-md-2 g-4">
             {% for event in events %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100">
+                <div class="col">
+                    <div class="card h-100 kashiwa-card">
                         <div class="card-body">
-                            <h5 class="card-title" style="color: var(--sakura-dark);">
-                                {{ event.summary }}
-                            </h5>
-                            <p class="card-text">
-                                <small class="text-muted">
-                                    <i class="bi bi-calendar"></i>
-                                    {% if event.start.get('dateTime') %}
-                                        {{ event.start.dateTime|replace('T', ' ')|replace(':00+09:00', '') }}
-                                    {% else %}
-                                        {{ event.start.date }}
-                                    {% endif %}
-                                </small>
-                            </p>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="card-title">{{ event.summary }}</h5>
+                                <span class="badge bg-success">{{ event.status }}</span>
+                            </div>
+                            
                             {% if event.location %}
-                                <p class="card-text">
+                                <div class="mb-2">
                                     <small class="text-muted">
                                         <i class="bi bi-geo-alt"></i> {{ event.location }}
                                     </small>
-                                </p>
+                                </div>
                             {% endif %}
-                            {% if event.description %}
-                                <p class="card-text">
-                                    <small>{{ event.description|truncate(100) }}</small>
-                                </p>
-                            {% endif %}
-                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary btn-sm">
-                                詳細を見る
-                            </a>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> 
+                                    {% if event.start.dateTime %}
+                                        {{ event.start.dateTime|replace("T", " ")|replace("Z", "")|replace("+00:00", "") }}
+                                    {% elif event.start.date %}
+                                        {{ event.start.date }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            
+                            <div class="mt-2 d-flex justify-content-end">
+                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-success me-2">詳細</a>
+                                <a href="{{ url_for('event_update', event_id=event.id) }}" class="btn btn-sm btn-outline-primary me-2">編集</a>
+                                <a href="{{ url_for('event_delete', event_id=event.id) }}" class="btn btn-sm btn-outline-danger">削除</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="alert alert-info text-center">
-            <span style="font-size: 1.5rem;">🌸</span> イベントがありません <span style="font-size: 1.5rem;">🌸</span>
+        <div class="alert alert-info">
+            イベントがありません。「新規イベント作成」ボタンからイベントを追加してください。
         </div>
     {% endif %}
+
+    <style>
+        .kashiwa-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            border-left: 5px solid var(--kashiwa-green);
+        }
+        
+        .kashiwa-card::before {
+            content: "";
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            width: 50px;
+            height: 50px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%234D8061'%3E%3Cpath d='M256 48L142.9 184.5 256 320 369.1 184.5 256 48zm-78.5 217L256 384l78.5-119-78.5-65-78.5 65z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            opacity: 0.1;
+            transform: rotate(15deg);
+            z-index: 0;
+        }
+        
+        .card-body {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 {% endblock %} 

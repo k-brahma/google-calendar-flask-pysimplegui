@@ -7,28 +7,30 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <style>
         :root {
-            --autumn-brown: #8B4513;
-            --autumn-orange: #D2691E;
-            --autumn-gold: #B8860B;
-            --autumn-red: #A52A2A;
-            --autumn-cream: #FFF8DC;
-            --autumn-yellow: #DAA520;
+            /* 冬の色テーマ */
+            --winter-lightblue: #ADD8E6; /* 水色 */
+            --winter-deepblue: #000080; /* 紺色 */
+            --winter-snow: #FFFFFF;    /* 白 */
+            --winter-silver: #C0C0C0;   /* 銀色 */
+            --winter-iceblue: #F0FFFF;  /* アイスブルー (背景用) */
         }
 
         body {
-            background-color: var(--autumn-cream);
+            background-color: var(--winter-iceblue); /* 明るい水色系の背景 */
             font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
-            background-image: linear-gradient(to bottom, #FFF8DC, #F5DEB3);
+            /* グラデーションも寒色系に */
+            background-image: linear-gradient(to bottom, var(--winter-iceblue), var(--winter-lightblue));
             min-height: 100vh;
         }
 
         .container {
             margin-top: 2rem;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.95); /* 少し透明度を上げて雪っぽく */
             border-radius: 15px;
             padding: 2rem;
-            box-shadow: 0 0 20px rgba(139, 69, 19, 0.3);
-            border: 2px solid var(--autumn-brown);
+            /* 影も寒色系に */
+            box-shadow: 0 0 20px rgba(0, 0, 128, 0.2);
+            border: 2px solid var(--winter-deepblue); /* 枠線を紺色に */
         }
 
         .flash-messages {
@@ -36,41 +38,44 @@
         }
 
         .navbar {
-            background: linear-gradient(135deg, var(--autumn-orange), var(--autumn-brown)) !important;
-            box-shadow: 0 2px 10px rgba(139, 69, 19, 0.4);
+            /* ナビゲーションバーは濃い青系のグラデーションに */
+            background: linear-gradient(135deg, var(--winter-deepblue), var(--winter-lightblue)) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 128, 0.3);
         }
 
         .navbar-brand {
             font-weight: bold;
-            color: white !important;
+            color: var(--winter-snow) !important;
         }
 
         .nav-link {
-            color: white !important;
+            color: var(--winter-snow) !important;
             transition: all 0.3s ease;
         }
 
         .nav-link:hover {
-            color: var(--autumn-yellow) !important;
+            color: var(--winter-silver) !important; /* ホバー色を銀色に */
             transform: translateY(-2px);
         }
 
         .btn-primary {
-            background-color: var(--autumn-brown);
-            border-color: var(--autumn-brown);
+            background-color: var(--winter-deepblue); /* プライマリボタンを紺色に */
+            border-color: var(--winter-deepblue);
+            color: var(--winter-snow); /* ボタンテキストを白に */
         }
 
         .btn-primary:hover {
-            background-color: var(--autumn-orange);
-            border-color: var(--autumn-orange);
+            background-color: var(--winter-lightblue); /* ホバー色を水色に */
+            border-color: var(--winter-lightblue);
+            color: var(--winter-deepblue); /* ホバー時のテキストを紺色に */
         }
 
         .card {
             border: none;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 128, 0.15); /* 影を調整 */
             transition: transform 0.3s ease;
-            border-left: 5px solid var(--autumn-orange);
+            border-left: 5px solid var(--winter-lightblue); /* 左の線を水色に */
         }
 
         .card:hover {
@@ -82,25 +87,37 @@
             border: none;
         }
 
-        .kashiwa-decoration {
+        /* 秋の装飾をコメントアウト（または削除）し、冬の装飾を追加 */
+        /* .kashiwa-decoration { ... } */
+
+        .snow-decoration {
             position: fixed;
             width: 100%;
             height: 100%;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.1;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D2691E'%3E%3Cpath d='M12 1c-2.62 0-4.5 1.85-4.5 4.15 0 .54.1 1.06.32 1.55-.91.07-1.64.76-1.64 1.7 0 1.03.83 1.85 1.85 1.85.07 0 .15-.02.22-.02-.07.28-.12.56-.12.85C8.13 13.1 9.96 15 12 15s3.87-1.9 3.87-3.92c0-.29-.05-.57-.12-.85.07 0 .15.02.22.02 1.02 0 1.85-.82 1.85-1.85 0-.94-.73-1.63-1.64-1.7.22-.49.32-1.01.32-1.55C16.5 2.85 14.62 1 12 1zm0 8.88c-.91 0-1.65-.93-1.65-2.08s.74-2.08 1.65-2.08c.91 0 1.65.93 1.65 2.08s-.74 2.08-1.65 2.08z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23A52A2A'%3E%3Cpath d='M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66A20.08 20.08 0 0 1 4.4 19H5a2 2 0 0 0 2-2v-.89A10.78 10.78 0 0 0 17 8zm0-2c1.3-1.26 3.14-1.87 5-2V2h-2c-1.8.07-3.49.56-5.06 1.64-.39.28-.78.58-1.18.93L13 6c1.41-.95 2.63-1.5 4-2z'/%3E%3C/svg%3E");
-            background-size: 50px 50px, 70px 70px;
-            background-position: 0 0, 40px 40px;
+            opacity: 0.15; /* 少し透明度を上げる */
+            /* 雪の結晶のSVGアイコンを使用 (色を銀色に) */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23C0C0C0'%3E%3Cpath d='M12 2a1 1 0 0 1 1 1v3.586l2.707-2.707a1 1 0 0 1 1.414 1.414L14.414 8H18a1 1 0 1 1 0 2h-3.586l2.707 2.707a1 1 0 0 1-1.414 1.414L13 11.414V15a1 1 0 1 1-2 0v-3.586l-2.707 2.707a1 1 0 0 1-1.414-1.414L9.586 10H6a1 1 0 1 1 0-2h3.586L6.879 5.293a1 1 0 0 1 1.414-1.414L11 6.586V3a1 1 0 0 1 1-1zM12 16a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-4-4a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm8 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z'/%3E%3C/svg%3E");
+            background-size: 40px 40px; /* サイズ調整 */
+            background-position: 0 0;
             background-repeat: repeat;
+            animation: snowfall 10s linear infinite; /* 雪が降るアニメーション */
         }
+
+        /* 雪が降るアニメーション */
+        @keyframes snowfall {
+            0% { background-position: 0px 0px; }
+            100% { background-position: 100px 1000px; } /* Y方向への移動を大きくして降るように見せる */
+        }
+
     </style>
 </head>
 <body>
-    <div class="kashiwa-decoration"></div>
+    <div class="snow-decoration"></div>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">🍂 Google Calendar アプリ</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">❄️ Google Calendar アプリ</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>

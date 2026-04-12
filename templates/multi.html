@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}/multi 営業デモ - Google Calendar アプリ{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    <div>
+        <h1 class="mb-2">営業デモ一括作成</h1>
+        <p class="text-muted mb-0">明日から5日分の営業予定を、1日の複数訪問を含めてまとめて作成し、Google カレンダー側の変更をこの画面へ同期できます。</p>
+    </div>
+    <div class="text-lg-end">
+        <div class="fw-bold">現在の作成済み件数: {{ created_count }} / {{ rows|length }}</div>
+        <div class="small text-muted">対象担当: 営業担当Aさん / 営業担当Bさん / 営業担当Cさん</div>
+    </div>
+</div>
+
+<div class="card sync-status-card mb-4">
+    <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <div class="fw-bold">Google カレンダーと同期済み</div>
+            <div class="small text-muted">この一覧は Google カレンダーから再取得した最新の予定です。</div>
+        </div>
+        <div class="text-lg-end">
+            <span class="badge text-bg-success">同期OK</span>
+            <div class="small text-muted mt-2">最終取得: {{ synced_at_label }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card multi-demo-card mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <form method="post" action="{{ url_for('multi_demo') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="create">
+                <button type="submit" class="btn btn-primary">デモ予定をまとめて生成</button>
+            </form>
+
+            <form method="post" action="{{ url_for('multi_demo') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="refresh">
+                <button type="submit" class="btn btn-outline-primary">Google カレンダーと同期</button>
+            </form>
+
+            <form method="post" action="{{ url_for('multi_demo') }}" onsubmit="return confirm('現在以降の予定をすべて削除します。続行しますか？');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="flush">
+                <button type="submit" class="btn btn-outline-danger">先日付予定をFLUSH</button>
+            </form>
+        </div>
+
+        <div class="alert alert-warning mb-0">
+            FLUSH はデモ用の特別機能です。現在以降のイベントをカレンダー全体から削除します。
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle multi-demo-table">
+        <thead>
+            <tr>
+                <th>日付</th>
+                <th>担当</th>
+                <th>現在の予定</th>
+                <th>同期状況</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ row.target_date.strftime("%Y-%m-%d") }}</div>
+                        <div class="small text-muted">{{ row.weekday_label }}曜日</div>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill text-bg-success">{{ row.assignee }}</span>
+                    </td>
+                    <td>
+                        {% if row.exists %}
+                            <div class="fw-bold">{{ row.actual_summary }}</div>
+                            <div class="small text-muted">{{ row.actual_start }} - {{ row.actual_end }}</div>
+                            <div class="small text-muted">{{ row.actual_location }}</div>
+                            <div class="small text-muted">{{ row.actual_description|nl2br }}</div>
+                            {% if row.has_changes %}
+                                <div class="small text-muted mt-2">
+                                    元のデモ案: {{ row.summary }} / {{ row.planned_time_label }}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="fw-bold text-secondary">未作成</div>
+                            <div class="small text-muted">まだカレンダーに作成されていません。</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.exists %}
+                            <div class="fw-bold text-success">同期済み</div>
+                            {% if row.has_changes %}
+                                <div class="small">
+                                    <span class="badge text-bg-warning">Google側の編集を反映済み</span>
+                                </div>
+                            {% else %}
+                                <div class="small">
+                                    <span class="badge text-bg-success">初期デモ内容と一致</span>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="fw-bold text-secondary">未同期</div>
+                            <div class="small text-muted">まずはデモ予定を生成してください。</div>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if row.event_id %}
+                            <a href="{{ url_for('event_detail', event_id=row.event_id) }}" class="btn btn-sm btn-outline-success">詳細</a>
+                        {% else %}
+                            <span class="small text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .sync-status-card,
+    .multi-demo-card {
+        border-radius: 18px;
+    }
+
+    .multi-demo-table th {
+        white-space: nowrap;
+        background-color: rgba(255, 255, 255, 0.75);
+    }
+
+    .multi-demo-table td {
+        min-width: 120px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Google Spreadsheet 取り込み表示 - Google Calendar アプリ{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    <div>
+        <h1 class="mb-2">GoogleSpreadSheetからスケジュールを取り込んで表示</h1>
+        <p class="text-muted mb-0">サービスアカウントで共有済みの Google Spreadsheet を読み込み、CSV と同じ形式の予定データを一覧表示します。</p>
+    </div>
+    <div class="text-lg-end">
+        <div class="fw-bold">取り込み件数: {{ imported_count }}</div>
+        <div class="small text-muted">最終取得: {{ synced_at_label }}</div>
+    </div>
+</div>
+
+<div class="card spreadsheet-status-card mb-4">
+    <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <div class="fw-bold">接続先スプレッドシート</div>
+            <div class="small text-muted">タイトル: {{ spreadsheet_title }}</div>
+            <div class="small text-muted">範囲: {{ range_name }}</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <form method="post" action="{{ url_for('spreadsheet_demo') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="create">
+                <button type="submit" class="btn btn-primary">カレンダーに流し込み</button>
+            </form>
+            <form method="post" action="{{ url_for('spreadsheet_demo') }}" onsubmit="return confirm('現在以降の予定をすべて削除します。続行しますか？');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="flush">
+                <button type="submit" class="btn btn-outline-danger">先日付予定をFLUSH</button>
+            </form>
+            <form method="post" action="{{ url_for('spreadsheet_demo') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="refresh">
+                <button type="submit" class="btn btn-outline-primary">Google Spreadsheet を再取得</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-warning mb-4">
+    FLUSH はデモ用の特別機能です。現在以降のイベントをカレンダー全体から削除します。
+</div>
+
+{% if rows %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle spreadsheet-table">
+            <thead>
+                <tr>
+                    <th>日付</th>
+                    <th>担当</th>
+                    <th>予定</th>
+                    <th>場所</th>
+                    <th>説明</th>
+                    <th>slot_key</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ row.target_date.strftime("%Y-%m-%d") }}</div>
+                            <div class="small text-muted">{{ row.weekday_label }}曜日</div>
+                            <div class="small text-muted">{{ row.planned_time_label }}</div>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill text-bg-success">{{ row.assignee }}</span>
+                        </td>
+                        <td>{{ row.summary }}</td>
+                        <td>{{ row.location }}</td>
+                        <td class="small text-muted">{{ row.description|nl2br }}</td>
+                        <td><code>{{ row.slot_key }}</code></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info mb-0">
+        表示できるスケジュールがありません。Spreadsheet 側のヘッダーと共有設定を確認してください。
+    </div>
+{% endif %}
+
+<style>
+    .spreadsheet-status-card {
+        border-radius: 18px;
+    }
+
+    .spreadsheet-table th {
+        white-space: nowrap;
+        background-color: rgba(255, 255, 255, 0.75);
+    }
+
+    .spreadsheet-table td {
+        min-width: 120px;
+    }
+</style>
+{% endblock %}

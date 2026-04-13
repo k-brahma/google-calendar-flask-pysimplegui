@@ -9,11 +9,12 @@
 3. プロジェクト名（例：`calendar-app`）を入力し、「作成」をクリックします。
 4. 作成したプロジェクトを選択します。
 
-## 2. Google Calendar APIの有効化
+## 2. Google APIの有効化
 
 1. 左側のメニューから「APIとサービス」→「ライブラリ」を選択します。
 2. 検索バーに「Google Calendar API」と入力し、表示された結果をクリックします。
 3. 「有効にする」ボタンをクリックしてAPIを有効化します。
+4. Google Spreadsheet取り込みも使う場合は、同様に「Google Sheets API」も有効化します。
 
 ## 3. サービスアカウントの作成
 
@@ -57,6 +58,18 @@
 1. Googleカレンダーの設定で「カレンダーの設定と共有」を開きます。
 2. 「カレンダーの統合」セクションにある「カレンダーID」をコピーします。
    - 通常は`your-email@gmail.com`または`random-string@group.calendar.google.com`の形式です。
+
+## 6.5. Google Spreadsheetへのアクセス設定
+
+Google Spreadsheetの取り込み機能を使う場合は、対象のスプレッドシートをサービスアカウントに共有してください。
+
+1. 対象のGoogle Spreadsheetを開きます。
+2. 右上の「共有」をクリックします。
+3. サービスアカウントのメールアドレス（例: `your-service-account@your-project-id.iam.gserviceaccount.com`）を追加します。
+4. 権限は「閲覧者」で構いません。
+5. `config.json` の `spreadsheet_settings.spreadsheet_id` にシートIDを設定します。`range_name` は任意で、未指定なら先頭シートの `A:Z` を参照します。
+6. タイトル行、空行、`ID` 列があっても構いません。たとえば表の開始が `A3` でも取り込めます。
+7. どこかの行に `slot_key,day_offset,assignee,summary,location,description,start_hour,start_minute,duration_minutes` が含まれていれば、その行をヘッダーとして自動検出します。
 
 ## 7. ファイル配置
 

@@ -8,9 +8,10 @@ from flask import Flask, flash, redirect, render_template, request, session, url
 from flask_wtf.csrf import CSRFProtect
 from markupsafe import Markup
 
-from core.auth import get_calendar_manager, requires_auth, setup_credentials
+from core.auth import get_calendar_manager, get_spreadsheet_manager, requires_auth, setup_credentials
 from core.constants import JST
 from core.multi_demo_service import build_multi_demo_rows, create_multi_demo_events, flush_future_events
+from core.spreadsheet_demo_service import build_spreadsheet_demo_rows, create_spreadsheet_demo_events
 from core.runtime import resource_path
 
 
@@ -286,7 +287,7 @@ def event_delete(event_id):
 @app.route("/multi", methods=["GET", "POST"])
 @requires_auth
 def multi_demo():
-    """営業デモ用の一括予定作成ページ。"""
+    """CSV / XLSX デモ用の一括予定作成ページ。"""
     calendar_manager = get_calendar_manager(session)
     if not calendar_manager:
         flash("カレンダーマネージャーが初期化されていません", "error")
@@ -295,31 +296,118 @@ def multi_demo():
     if request.method == "POST":
         action = request.form.get("action", "refresh")
 
-        if action == "create":
-            created_count, skipped_count, failed_summaries = create_multi_demo_events(calendar_manager, session)
-            if created_count:
-                flash(f"{created_count}件のデモ予定を作成しました", "success")
-            if skipped_count:
-                flash(f"{skipped_count}件は既に存在していたため再作成していません", "info")
-            if failed_summaries:
-                flash(f"作成に失敗した予定: {', '.join(failed_summaries)}", "error")
-        elif action == "flush":
-            deleted_count, failed_count = flush_future_events(calendar_manager, session)
-            flash(f"先日付イベントを{deleted_count}件削除しました", "warning")
-            if failed_count:
-                flash(f"{failed_count}件の削除に失敗しました", "error")
-        else:
-            flash("Google カレンダーの最新状態を再取得しました", "success")
+        try:
+            if action == "create":
+                created_count, skipped_count, failed_summaries = create_multi_demo_events(calendar_manager, session)
+                if created_count:
+                    flash(f"{created_count}件のデモ予定を作成しました", "success")
+                if skipped_count:
+                    flash(f"{skipped_count}件は既に存在していたため再作成していません", "info")
+                if failed_summaries:
+                    flash(f"作成に失敗した予定: {', '.join(failed_summaries)}", "error")
+            elif action == "flush":
+                deleted_count, failed_count = flush_future_events(calendar_manager, session)
+                flash(f"先日付イベントを{deleted_count}件削除しました", "warning")
+                if failed_count:
+                    flash(f"{failed_count}件の削除に失敗しました", "error")
+            else:
+                flash("Google カレンダーの最新状態を再取得しました", "success")
+        except FileNotFoundError as exc:
+            flash(str(exc), "error")
+        except ValueError as exc:
+            flash(str(exc), "error")
+        except Exception as exc:
+            flash(f"/multi データの処理に失敗しました: {exc}", "error")
 
         return redirect(url_for("multi_demo"))
 
-    rows = build_multi_demo_rows(calendar_manager, session)
+    try:
+        rows = build_multi_demo_rows(calendar_manager, session)
+    except FileNotFoundError as exc:
+        flash(str(exc), "error")
+        rows = []
+    except ValueError as exc:
+        flash(str(exc), "error")
+        rows = []
+    except Exception as exc:
+        flash(f"/multi データの読み込みに失敗しました: {exc}", "error")
+        rows = []
+
     created_count = sum(1 for row in rows if row["exists"])
+    assignees = sorted({row["assignee"] for row in rows})
+    day_span = max((row["day_offset"] for row in rows), default=0)
     synced_at_label = datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S")
     return render_template(
         "multi.html",
         rows=rows,
         created_count=created_count,
+        assignees=assignees,
+        day_span=day_span,
+        synced_at_label=synced_at_label,
+    )
+
+
+@app.route("/spreadsheet", methods=["GET", "POST"])
+@requires_auth
+def spreadsheet_demo():
+    """Google Spreadsheet から取り込んだ予定を表示するページ。"""
+    spreadsheet_manager = get_spreadsheet_manager(session)
+    if not spreadsheet_manager:
+        flash("スプレッドシートマネージャーが初期化されていません", "error")
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        action = request.form.get("action", "refresh")
+
+        if action in {"create", "flush"}:
+            calendar_manager = get_calendar_manager(session)
+            if not calendar_manager:
+                flash("カレンダーマネージャーが初期化されていません", "error")
+                return redirect(url_for("index"))
+
+            if action == "create":
+                try:
+                    created_count, skipped_count, failed_summaries = create_spreadsheet_demo_events(
+                        calendar_manager,
+                        session,
+                        spreadsheet_manager,
+                    )
+                    if created_count:
+                        flash(f"{created_count}件の予定をGoogle カレンダーへ作成しました", "success")
+                    if skipped_count:
+                        flash(f"{skipped_count}件は既に存在していたため再作成していません", "info")
+                    if failed_summaries:
+                        flash(f"作成に失敗した予定: {', '.join(failed_summaries)}", "error")
+                except Exception as exc:
+                    flash(f"Google カレンダーへの流し込みに失敗しました: {exc}", "error")
+            else:
+                deleted_count, failed_count = flush_future_events(calendar_manager, session)
+                flash(f"先日付イベントを{deleted_count}件削除しました", "warning")
+                if failed_count:
+                    flash(f"{failed_count}件の削除に失敗しました", "error")
+        else:
+            flash("Google Spreadsheet の最新状態を再取得しました", "success")
+
+        return redirect(url_for("spreadsheet_demo"))
+
+    rows = []
+    spreadsheet_title = "-"
+    range_name = "-"
+
+    try:
+        rows = build_spreadsheet_demo_rows(spreadsheet_manager)
+        spreadsheet_title = spreadsheet_manager.get_sheet_title() or spreadsheet_manager.spreadsheet_id
+        range_name = spreadsheet_manager.range_name
+    except Exception as exc:
+        flash(f"Google Spreadsheetの読み込みに失敗しました: {exc}", "error")
+
+    synced_at_label = datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S")
+    return render_template(
+        "spreadsheet.html",
+        rows=rows,
+        imported_count=len(rows),
+        spreadsheet_title=spreadsheet_title,
+        range_name=range_name,
         synced_at_label=synced_at_label,
     )
 

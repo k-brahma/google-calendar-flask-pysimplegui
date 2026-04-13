@@ -1,461 +1,307 @@
 import logging
 import tkinter as tk
-from tkinter import ttk, messagebox
-from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
-import pandas as pd
-from tkcalendar import DateEntry
-from gcal.calendar_manager import CalendarManager
+from datetime import datetime
+from tkinter import messagebox, ttk
 
-# ロガーの設定
+from core.multi_demo_service import flush_future_events
+from core.spreadsheet_demo_service import (
+    build_spreadsheet_sync_rows,
+    create_spreadsheet_demo_events,
+)
+from gcal.calendar_manager import CalendarManager
+from gsheets.spreadsheet_manager import SpreadsheetManager
+
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
-class CalendarGUI:
+class LocalSessionState(dict):
+    """Minimal session-like store used by shared demo services."""
+
+    def __init__(self):
+        super().__init__()
+        self.modified = False
+
+
+class SpreadsheetCalendarGUI:
     def __init__(self, root):
-        """カレンダーGUIアプリケーションの初期化"""
+        """Google Spreadsheet と Google Calendar 連携デモの初期化"""
         self.root = root
-        self.root.title("Google Calendar GUI (Tkinter)")
-        self.root.geometry("1000x700")
-        
-        # カレンダーマネージャーの初期化
+        self.root.title("Google Spreadsheet -> Google Calendar デモ")
+        self.root.geometry("1320x820")
+        self.root.minsize(1080, 700)
+
+        self.session_state = LocalSessionState()
+        self.rows = []
+        self.item_row_map = {}
+
         try:
             self.calendar_manager = CalendarManager()
-        except Exception as e:
-            logger.error(f"CalendarManager初期化エラー: {e}")
-            messagebox.showerror("エラー", f"カレンダーマネージャーの初期化に失敗しました:\n{e}")
+            self.spreadsheet_manager = SpreadsheetManager()
+        except Exception as exc:
+            logger.error("マネージャー初期化エラー: %s", exc)
+            messagebox.showerror("エラー", f"初期化に失敗しました:\n{exc}")
+            self.root.after(0, self.root.destroy)
             return
-        
-        # データ
-        self.df = pd.DataFrame()
-        self.current_event_id = None
-        self.item_id_map = {}  # TreeviewアイテムとIDのマッピング
-        
-        # GUI作成
+
+        self.subtitle_var = tk.StringVar(value="スプレッドシート接続中...")
+        self.status_var = tk.StringVar(value="読み込み待機中")
+        self.detail_var = tk.StringVar(value="行を選択すると詳細を表示します。")
+
         self.create_widgets()
-        self.load_events()
-    
-    def get_events_df(self):
-        """カレンダーイベントをDataFrameとして取得"""
-        JST = ZoneInfo("Asia/Tokyo")
-        time_min = datetime.now(JST)
-        time_max = time_min + timedelta(days=30)
+        self.refresh_rows(show_message=False)
 
-        # UTC（Z）に変換
-        time_min_utc = time_min.astimezone(ZoneInfo("UTC"))
-        time_max_utc = time_max.astimezone(ZoneInfo("UTC"))
-
-        try:
-            events = self.calendar_manager.get_events(
-                time_min=time_min_utc.isoformat().replace("+00:00", "Z"),
-                time_max=time_max_utc.isoformat().replace("+00:00", "Z"),
-                max_results=50,
-            )
-
-            # イベントデータをDataFrameに変換
-            events_data = []
-            for event in events:
-                start_time = event["start"].get("dateTime", event["start"].get("date", ""))
-                if "T" in start_time:  # datetime形式の場合
-                    start_time = start_time.replace("T", " ").replace(":00+09:00", "")
-                    # 日付書式をyyyy/mm/dd形式に変更
-                    if len(start_time) >= 10 and start_time[4] == '-' and start_time[7] == '-':
-                        start_time = start_time.replace('-', '/', 2)
-
-                events_data.append(
-                    {
-                        "ID": event["id"],
-                        "タイトル": event["summary"],
-                        "開始時間": start_time,
-                        "場所": event.get("location", ""),
-                        "説明": (
-                            event.get("description", "")[:50] + "..."
-                            if event.get("description", "")
-                            else ""
-                        ),
-                    }
-                )
-
-            return pd.DataFrame(events_data)
-        except Exception as e:
-            logger.error(f"イベント取得エラー: {e}")
-            messagebox.showerror("エラー", f"イベントの取得に失敗しました:\n{e}")
-            return pd.DataFrame()
-    
     def create_widgets(self):
-        """ウィジェットの作成"""
-        # メインフレーム
-        main_frame = ttk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        # ヘッダーフレーム
+        """ウィジェットを作成する"""
+        main_frame = ttk.Frame(self.root, padding=12)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
         header_frame = ttk.Frame(main_frame)
-        header_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        # タイトル
-        title_label = ttk.Label(header_frame, text="Google Calendar イベント一覧", font=("Arial", 16))
-        title_label.pack(side=tk.LEFT)
-        
-        # ボタンフレーム
+        header_frame.pack(fill=tk.X, pady=(0, 12))
+
+        title_frame = ttk.Frame(header_frame)
+        title_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        ttk.Label(
+            title_frame,
+            text="Google Spreadsheet 連携デモ",
+            font=("Meiryo UI", 18, "bold"),
+        ).pack(anchor=tk.W)
+        ttk.Label(title_frame, textvariable=self.subtitle_var).pack(anchor=tk.W, pady=(4, 0))
+        ttk.Label(title_frame, textvariable=self.status_var).pack(anchor=tk.W, pady=(2, 0))
+
         button_frame = ttk.Frame(header_frame)
         button_frame.pack(side=tk.RIGHT)
-        
-        self.refresh_button = ttk.Button(button_frame, text="最新の状態を取得", command=self.refresh_events)
-        self.refresh_button.pack(side=tk.LEFT, padx=(0, 5))
-        
-        self.exit_button = ttk.Button(button_frame, text="終了", command=self.root.quit)
-        self.exit_button.pack(side=tk.LEFT)
-        
-        # テーブルフレーム
-        table_frame = ttk.Frame(main_frame)
-        table_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Treeviewでテーブル作成
-        self.tree = ttk.Treeview(table_frame, show='headings', selectmode='extended')
-        
-        # スクロールバー
+
+        ttk.Button(button_frame, text="Google Spreadsheet を再取得", command=self.refresh_rows).pack(
+            side=tk.LEFT, padx=(0, 6)
+        )
+        ttk.Button(button_frame, text="カレンダーに流し込み", command=self.create_events).pack(
+            side=tk.LEFT, padx=(0, 6)
+        )
+        ttk.Button(button_frame, text="先日付予定をFLUSH", command=self.flush_events).pack(
+            side=tk.LEFT, padx=(0, 6)
+        )
+        ttk.Button(button_frame, text="終了", command=self.root.quit).pack(side=tk.LEFT)
+
+        table_frame = ttk.LabelFrame(main_frame, text="Google Spreadsheet の予定一覧")
+        table_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 12))
+
+        columns = ("date", "assignee", "summary", "planned_time", "status", "actual_summary")
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", selectmode="browse")
+        self.tree.heading("date", text="日付")
+        self.tree.heading("assignee", text="担当")
+        self.tree.heading("summary", text="予定案")
+        self.tree.heading("planned_time", text="予定時間")
+        self.tree.heading("status", text="同期状況")
+        self.tree.heading("actual_summary", text="カレンダー上の予定")
+        self.tree.column("date", width=110, minwidth=100, anchor=tk.W)
+        self.tree.column("assignee", width=120, minwidth=110, anchor=tk.W)
+        self.tree.column("summary", width=280, minwidth=220, anchor=tk.W)
+        self.tree.column("planned_time", width=180, minwidth=160, anchor=tk.W)
+        self.tree.column("status", width=140, minwidth=120, anchor=tk.W)
+        self.tree.column("actual_summary", width=320, minwidth=220, anchor=tk.W)
+
         v_scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=self.tree.yview)
         h_scrollbar = ttk.Scrollbar(table_frame, orient=tk.HORIZONTAL, command=self.tree.xview)
         self.tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
-        
-        # テーブルの配置
-        self.tree.grid(row=0, column=0, sticky='nsew')
-        v_scrollbar.grid(row=0, column=1, sticky='ns')
-        h_scrollbar.grid(row=1, column=0, sticky='ew')
-        
+
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        v_scrollbar.grid(row=0, column=1, sticky="ns")
+        h_scrollbar.grid(row=1, column=0, sticky="ew")
+
         table_frame.grid_rowconfigure(0, weight=1)
         table_frame.grid_columnconfigure(0, weight=1)
-        
-        # イベント選択時のコールバック
-        self.tree.bind('<<TreeviewSelect>>', self.on_item_select)
-        
-        # 編集フレーム
-        self.create_edit_frame(main_frame)
-    
-    def create_edit_frame(self, parent):
-        """編集フレームの作成"""
-        edit_frame = ttk.LabelFrame(parent, text="イベント詳細")
-        edit_frame.pack(fill=tk.X, pady=(10, 0))
-        
-        # グリッド設定
-        edit_frame.grid_columnconfigure(1, weight=1)
-        
-        # タイトル
-        ttk.Label(edit_frame, text="タイトル:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        self.title_entry = ttk.Entry(edit_frame, width=50)
-        self.title_entry.grid(row=0, column=1, columnspan=2, sticky=tk.EW, padx=5, pady=5)
-        
-        # 開始日時
-        ttk.Label(edit_frame, text="開始日:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
-        start_frame = ttk.Frame(edit_frame)
-        start_frame.grid(row=1, column=1, sticky=tk.W, padx=5, pady=5)
-        
-        self.start_date_entry = DateEntry(start_frame, width=12, background='darkblue',
-                                         foreground='white', borderwidth=2,
-                                         date_pattern='yyyy/mm/dd')
-        self.start_date_entry.pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Label(start_frame, text="時刻:").pack(side=tk.LEFT)
-        self.start_time_entry = ttk.Entry(start_frame, width=8)
-        self.start_time_entry.pack(side=tk.LEFT, padx=(5, 0))
-        
-        # 終了日時
-        ttk.Label(edit_frame, text="終了日:").grid(row=2, column=0, sticky=tk.W, padx=5, pady=5)
-        end_frame = ttk.Frame(edit_frame)
-        end_frame.grid(row=2, column=1, sticky=tk.W, padx=5, pady=5)
-        
-        self.end_date_entry = DateEntry(end_frame, width=12, background='darkblue',
-                                       foreground='white', borderwidth=2,
-                                       date_pattern='yyyy/mm/dd')
-        self.end_date_entry.pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Label(end_frame, text="時刻:").pack(side=tk.LEFT)
-        self.end_time_entry = ttk.Entry(end_frame, width=8)
-        self.end_time_entry.pack(side=tk.LEFT, padx=(5, 0))
-        
-        # 場所
-        ttk.Label(edit_frame, text="場所:").grid(row=3, column=0, sticky=tk.W, padx=5, pady=5)
-        self.location_entry = ttk.Entry(edit_frame, width=50)
-        self.location_entry.grid(row=3, column=1, columnspan=2, sticky=tk.EW, padx=5, pady=5)
-        
-        # 説明
-        ttk.Label(edit_frame, text="説明:").grid(row=4, column=0, sticky=tk.NW, padx=5, pady=5)
-        self.description_text = tk.Text(edit_frame, width=50, height=5)
-        self.description_text.grid(row=4, column=1, columnspan=2, sticky=tk.EW, padx=5, pady=5)
-        
-        # ボタンフレーム
-        button_frame = ttk.Frame(edit_frame)
-        button_frame.grid(row=5, column=0, columnspan=3, pady=10)
-        
-        self.save_button = ttk.Button(button_frame, text="保存", command=self.save_event)
-        self.save_button.pack(side=tk.LEFT, padx=5)
-        
-        self.delete_button = ttk.Button(button_frame, text="削除", command=self.delete_event)
-        self.delete_button.pack(side=tk.LEFT, padx=5)
-        
-        self.cancel_button = ttk.Button(button_frame, text="キャンセル", command=self.clear_form)
-        self.cancel_button.pack(side=tk.LEFT, padx=5)
-        
-        self.new_button = ttk.Button(button_frame, text="新規作成", command=self.new_event)
-        self.new_button.pack(side=tk.RIGHT, padx=5)
-    
-    def load_events(self):
-        """イベントをロードしてテーブルに表示"""
-        self.df = self.get_events_df()
-        self.update_table()
-    
+
+        self.tree.bind("<<TreeviewSelect>>", self.on_item_select)
+
+        detail_outer = ttk.LabelFrame(main_frame, text="選択中の詳細")
+        detail_outer.pack(fill=tk.BOTH, expand=False)
+        detail_outer.columnconfigure(0, weight=1)
+        detail_outer.columnconfigure(1, weight=1)
+
+        ttk.Label(detail_outer, textvariable=self.detail_var).grid(
+            row=0, column=0, columnspan=2, sticky=tk.W, padx=8, pady=(8, 4)
+        )
+
+        plan_frame = ttk.LabelFrame(detail_outer, text="Spreadsheet の予定案")
+        plan_frame.grid(row=1, column=0, sticky="nsew", padx=(8, 4), pady=(0, 8))
+        actual_frame = ttk.LabelFrame(detail_outer, text="Google Calendar 上の状態")
+        actual_frame.grid(row=1, column=1, sticky="nsew", padx=(4, 8), pady=(0, 8))
+        detail_outer.rowconfigure(1, weight=1)
+
+        self.plan_text = tk.Text(plan_frame, height=14, wrap=tk.WORD)
+        self.plan_text.pack(fill=tk.BOTH, expand=True, padx=6, pady=6)
+        self.actual_text = tk.Text(actual_frame, height=14, wrap=tk.WORD)
+        self.actual_text.pack(fill=tk.BOTH, expand=True, padx=6, pady=6)
+
+        self._set_text(self.plan_text, "")
+        self._set_text(self.actual_text, "")
+
+    def _set_text(self, widget, content):
+        """Set read-only text content."""
+        widget.config(state=tk.NORMAL)
+        widget.delete("1.0", tk.END)
+        widget.insert("1.0", content)
+        widget.config(state=tk.DISABLED)
+
+    def refresh_rows(self, show_message=True):
+        """Google Spreadsheet とカレンダー状態を再取得する"""
+        try:
+            self.rows = build_spreadsheet_sync_rows(
+                self.calendar_manager,
+                self.session_state,
+                self.spreadsheet_manager,
+            )
+            spreadsheet_title = self.spreadsheet_manager.get_sheet_title() or self.spreadsheet_manager.spreadsheet_id
+            self.subtitle_var.set(
+                f"接続先: {spreadsheet_title} / 範囲: {self.spreadsheet_manager.range_name}"
+            )
+            self.status_var.set(
+                f"取り込み件数: {len(self.rows)} / 最終取得: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+            self.update_table()
+            self.clear_detail()
+            if show_message:
+                messagebox.showinfo("完了", "Google Spreadsheet の最新状態を再取得しました")
+        except Exception as exc:
+            logger.error("Spreadsheet再取得エラー: %s", exc)
+            messagebox.showerror("エラー", f"Google Spreadsheet の読み込みに失敗しました:\n{exc}")
+
     def update_table(self):
-        """テーブルの更新"""
-        # 既存の項目をクリア
+        """一覧テーブルを更新する"""
         for item in self.tree.get_children():
             self.tree.delete(item)
-        
-        if self.df.empty:
-            return
-        
-        # ヘッダーの設定（IDを除外）
-        display_columns = [col for col in self.df.columns if col != "ID"]
-        self.tree['columns'] = display_columns
-        
-        for col in display_columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=150, minwidth=100)
-        
-        # IDとTreeviewアイテムのマッピングを初期化
-        self.item_id_map = {}
-        
-        # データの挿入
-        for index, row in self.df.iterrows():
-            display_values = [row[col] for col in display_columns]
-            item_id = self.tree.insert('', 'end', values=display_values)
-            # IDとTreeviewアイテムのマッピングを保存
-            self.item_id_map[item_id] = row['ID']
-    
-    def on_item_select(self, event):
-        """テーブル項目選択時の処理"""
+
+        self.item_row_map = {}
+        for row in self.rows:
+            values = (
+                row["target_date"].strftime("%Y-%m-%d"),
+                row["assignee"],
+                row["summary"],
+                row["planned_time_label"],
+                row["status_label"],
+                row["actual_summary"] if row["exists"] else "-",
+            )
+            item_id = self.tree.insert("", tk.END, values=values)
+            self.item_row_map[item_id] = row
+
+    def clear_detail(self):
+        """詳細表示をクリアする"""
+        self.detail_var.set("行を選択すると詳細を表示します。")
+        self._set_text(self.plan_text, "")
+        self._set_text(self.actual_text, "")
+
+    def on_item_select(self, _event):
+        """一覧選択時に詳細を表示する"""
         selection = self.tree.selection()
         if not selection:
+            self.clear_detail()
             return
-        
-        item = selection[0]
-        # マッピングからIDを取得
-        event_id = self.item_id_map.get(item)
-        
-        if not event_id:
+
+        row = self.item_row_map.get(selection[0])
+        if not row:
+            self.clear_detail()
             return
-        
-        # DataFrameから詳細情報を取得
-        event_row = self.df[self.df['ID'] == event_id].iloc[0]
-        
-        # 詳細情報を取得
+
+        self.detail_var.set(f"slot_key: {row['slot_key']} / 状態: {row['status_label']}")
+        self._set_text(self.plan_text, self.format_plan_detail(row))
+        self._set_text(self.actual_text, self.format_actual_detail(row))
+
+    def format_plan_detail(self, row):
+        """Spreadsheet の予定案を整形する"""
+        return "\n".join(
+            [
+                f"slot_key: {row['slot_key']}",
+                f"日付: {row['target_date'].strftime('%Y-%m-%d')} ({row['weekday_label']}曜日)",
+                f"担当: {row['assignee']}",
+                f"件名: {row['summary']}",
+                f"時間: {row['planned_time_label']}",
+                f"場所: {row['location']}",
+                "",
+                "説明:",
+                row["description"],
+            ]
+        )
+
+    def format_actual_detail(self, row):
+        """Google Calendar 上の状態を整形する"""
+        if not row["exists"]:
+            return "\n".join(
+                [
+                    "まだカレンダーに作成されていません。",
+                    "",
+                    "「カレンダーに流し込み」を押すと、",
+                    "この予定案を Google Calendar に登録します。",
+                ]
+            )
+
+        lines = [
+            f"イベントID: {row['event_id']}",
+            f"件名: {row['actual_summary']}",
+            f"時間: {row['actual_start']} - {row['actual_end']}",
+            f"場所: {row['actual_location']}",
+            "",
+            "説明:",
+            row["actual_description"],
+        ]
+        if row["has_changes"]:
+            lines.extend(["", "Google Calendar 側で予定内容が編集されています。"])
+        return "\n".join(lines)
+
+    def create_events(self):
+        """Spreadsheet の予定案を Google Calendar に作成する"""
         try:
-            selected_event = self.calendar_manager.get_event(event_id)
-            end_time = ""
-            full_description = ""
-            
-            if selected_event:
-                if "end" in selected_event:
-                    end_time = selected_event["end"].get(
-                        "dateTime", selected_event["end"].get("date", "")
-                    )
-                    if "T" in end_time:  # datetime形式の場合
-                        end_time = end_time.replace("T", " ").replace(":00+09:00", "")
-                        # 日付書式をyyyy/mm/dd形式に変更
-                        if len(end_time) >= 10 and end_time[4] == '-' and end_time[7] == '-':
-                            end_time = end_time.replace('-', '/', 2)
-                
-                full_description = selected_event.get("description", "")
-            
-            # フォームに値を設定
-            self.current_event_id = event_id
-            self.title_entry.delete(0, tk.END)
-            self.title_entry.insert(0, event_row['タイトル'])
-            
-            # 開始時間の設定
-            start_datetime_str = event_row['開始時間']
-            if start_datetime_str and ' ' in start_datetime_str:
-                start_date_str, start_time_str = start_datetime_str.split(' ', 1)
-                try:
-                    # yyyy/mm/dd形式に対応
-                    if '/' in start_date_str:
-                        start_date = datetime.strptime(start_date_str, '%Y/%m/%d').date()
-                    else:
-                        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-                    self.start_date_entry.set_date(start_date)
-                    self.start_time_entry.delete(0, tk.END)
-                    self.start_time_entry.insert(0, start_time_str)
-                except ValueError:
-                    pass
-            
-            # 終了時間の設定
-            if end_time and ' ' in end_time:
-                end_date_str, end_time_str = end_time.split(' ', 1)
-                try:
-                    # yyyy/mm/dd形式に対応
-                    if '/' in end_date_str:
-                        end_date = datetime.strptime(end_date_str, '%Y/%m/%d').date()
-                    else:
-                        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
-                    self.end_date_entry.set_date(end_date)
-                    self.end_time_entry.delete(0, tk.END)
-                    self.end_time_entry.insert(0, end_time_str)
-                except ValueError:
-                    pass
-            
-            self.location_entry.delete(0, tk.END)
-            self.location_entry.insert(0, event_row['場所'])
-            
-            self.description_text.delete('1.0', tk.END)
-            self.description_text.insert('1.0', full_description)
-            
-            logger.info(f"選択されたイベント - ID: {event_id}, タイトル: {event_row['タイトル']}")
-            
-        except Exception as e:
-            logger.error(f"イベント詳細取得エラー: {e}")
-            messagebox.showerror("エラー", f"イベント詳細の取得に失敗しました:\n{e}")
-    
-    def clear_form(self):
-        """フォームのクリア"""
-        self.current_event_id = None
-        self.title_entry.delete(0, tk.END)
-        self.start_date_entry.set_date(datetime.now().date())
-        self.start_time_entry.delete(0, tk.END)
-        self.end_date_entry.set_date(datetime.now().date())
-        self.end_time_entry.delete(0, tk.END)
-        self.location_entry.delete(0, tk.END)
-        self.description_text.delete('1.0', tk.END)
-    
-    def new_event(self):
-        """新規イベント作成の準備"""
-        self.clear_form()
-        
-        # 現在時刻から1時間後の時間を設定（デフォルト）
-        default_time = datetime.now() + timedelta(hours=1)
-        self.start_date_entry.set_date(default_time.date())
-        self.start_time_entry.insert(0, default_time.strftime("%H:%M"))
-        
-        end_time = default_time + timedelta(hours=1)
-        self.end_date_entry.set_date(end_time.date())
-        self.end_time_entry.insert(0, end_time.strftime("%H:%M"))
-    
-    def save_event(self):
-        """イベントの保存"""
-        try:
-            # フォームからデータを取得
-            title = self.title_entry.get().strip()
-            start_date = self.start_date_entry.get_date()
-            start_time_str = self.start_time_entry.get().strip()
-            end_date = self.end_date_entry.get_date()
-            end_time_str = self.end_time_entry.get().strip()
-            location = self.location_entry.get().strip()
-            description = self.description_text.get('1.0', tk.END).strip()
-            
-            # バリデーション
-            if not title:
-                messagebox.showerror("エラー", "タイトルを入力してください")
-                return
-            
-            if not start_time_str:
-                messagebox.showerror("エラー", "開始時刻を入力してください")
-                return
-            
-            # 時間の解析
-            try:
-                # 開始時間の解析
-                start_time_obj = datetime.strptime(start_time_str, "%H:%M").time()
-                start_time = datetime.combine(start_date, start_time_obj)
-                
-                # 終了時間の解析
-                if end_time_str:
-                    end_time_obj = datetime.strptime(end_time_str, "%H:%M").time()
-                    end_time = datetime.combine(end_date, end_time_obj)
-                    if end_time <= start_time:
-                        messagebox.showerror("エラー", "終了時間は開始時間より後にしてください")
-                        return
-                else:
-                    end_time = start_time + timedelta(hours=1)
-            except ValueError:
-                messagebox.showerror("エラー", "時刻の形式が正しくありません。\n例: 09:00")
-                return
-            
-            # イベントの作成または更新
-            if self.current_event_id:
-                # 既存イベントの更新
-                logger.info(f"イベント更新 - ID: {self.current_event_id}")
-                updated_event = self.calendar_manager.update_event(
-                    event_id=self.current_event_id,
-                    summary=title,
-                    start_time=start_time,
-                    end_time=end_time,
-                    description=description,
-                    location=location,
-                )
-                
-                if updated_event:
-                    messagebox.showinfo("完了", "イベントを更新しました")
-                else:
-                    messagebox.showerror("エラー", "イベントの更新に失敗しました")
-            else:
-                # 新規イベントの作成
-                logger.info(f"イベント新規作成 - タイトル: {title}")
-                created_event = self.calendar_manager.create_event(
-                    summary=title,
-                    start_time=start_time,
-                    end_time=end_time,
-                    description=description,
-                    location=location,
-                )
-                
-                if created_event:
-                    messagebox.showinfo("完了", "イベントを作成しました")
-                else:
-                    messagebox.showerror("エラー", "イベントの作成に失敗しました")
-            
-            # イベントリストを更新
-            self.load_events()
-            self.clear_form()
-            
-        except Exception as e:
-            logger.error(f"イベント保存エラー: {e}")
-            messagebox.showerror("エラー", f"イベント保存中にエラーが発生しました:\n{e}")
-    
-    def delete_event(self):
-        """イベントの削除"""
-        if not self.current_event_id:
-            messagebox.showwarning("警告", "削除するイベントが選択されていません")
+            created_count, skipped_count, failed_summaries = create_spreadsheet_demo_events(
+                self.calendar_manager,
+                self.session_state,
+                self.spreadsheet_manager,
+            )
+        except Exception as exc:
+            logger.error("カレンダー流し込みエラー: %s", exc)
+            messagebox.showerror("エラー", f"Google Calendar への流し込みに失敗しました:\n{exc}")
             return
-        
-        # 削除確認ダイアログ
-        if not messagebox.askyesno("確認", "選択したイベントを削除しますか？"):
+
+        messages = []
+        if created_count:
+            messages.append(f"{created_count}件の予定を Google Calendar へ作成しました。")
+        if skipped_count:
+            messages.append(f"{skipped_count}件は既に存在していたためスキップしました。")
+        if failed_summaries:
+            messages.append(f"作成失敗: {', '.join(failed_summaries)}")
+        if not messages:
+            messages.append("新しく作成された予定はありません。")
+
+        messagebox.showinfo("流し込み結果", "\n".join(messages))
+        self.refresh_rows(show_message=False)
+
+    def flush_events(self):
+        """先日付イベントを削除する"""
+        if not messagebox.askyesno(
+            "確認",
+            "現在以降のイベントをカレンダー全体から削除します。続行しますか？",
+        ):
             return
-        
+
         try:
-            logger.info(f"イベント削除 - ID: {self.current_event_id}")
-            
-            if self.calendar_manager.delete_event(self.current_event_id):
-                messagebox.showinfo("完了", "イベントを削除しました")
-                # イベントリストを更新
-                self.load_events()
-                self.clear_form()
-            else:
-                messagebox.showerror("エラー", "イベントの削除に失敗しました")
-                
-        except Exception as e:
-            logger.error(f"イベント削除エラー: {e}")
-            messagebox.showerror("エラー", f"イベント削除中にエラーが発生しました:\n{e}")
-    
-    def refresh_events(self):
-        """イベントの再読み込み"""
-        self.load_events()
-        self.clear_form()
-        messagebox.showinfo("完了", "イベントを更新しました")
+            deleted_count, failed_count = flush_future_events(self.calendar_manager, self.session_state)
+        except Exception as exc:
+            logger.error("FLUSHエラー: %s", exc)
+            messagebox.showerror("エラー", f"FLUSH に失敗しました:\n{exc}")
+            return
+
+        lines = [f"先日付イベントを {deleted_count} 件削除しました。"]
+        if failed_count:
+            lines.append(f"{failed_count} 件の削除に失敗しました。")
+        messagebox.showwarning("FLUSH結果", "\n".join(lines))
+        self.refresh_rows(show_message=False)
 
 
 def main():
     """メイン関数"""
     root = tk.Tk()
-    CalendarGUI(root)
+    SpreadsheetCalendarGUI(root)
     root.mainloop()
 
 

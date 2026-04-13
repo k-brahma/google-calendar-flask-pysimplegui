@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}/multi 営業デモ - Google Calendar アプリ{% endblock %}
+{% block title %}/multi CSV/XLSX デモ - Google Calendar アプリ{% endblock %}
 
 {% block content %}
 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
     <div>
-        <h1 class="mb-2">営業デモ一括作成</h1>
-        <p class="text-muted mb-0">明日から5日分の営業予定を、1日の複数訪問を含めてまとめて作成し、Google カレンダー側の変更をこの画面へ同期できます。</p>
+        <h1 class="mb-2">CSV / XLSX デモ一括作成</h1>
+        <p class="text-muted mb-0">ローカルの CSV / XLSX と同じ内容の予定をもとに、明日から{{ day_span }}日分の現地訪問デモをまとめて作成し、Google カレンダー側の変更をこの画面へ同期できます。</p>
     </div>
     <div class="text-lg-end">
         <div class="fw-bold">現在の作成済み件数: {{ created_count }} / {{ rows|length }}</div>
-        <div class="small text-muted">対象担当: 営業担当Aさん / 営業担当Bさん / 営業担当Cさん</div>
+        <div class="small text-muted">対象担当: {{ assignees|join(" / ") if assignees else "-" }}</div>
     </div>
 </div>
 
@@ -33,7 +33,7 @@
             <form method="post" action="{{ url_for('multi_demo') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="create">
-                <button type="submit" class="btn btn-primary">デモ予定をまとめて生成</button>
+                <button type="submit" class="btn btn-primary">CSV / XLSX の予定をまとめて生成</button>
             </form>
 
             <form method="post" action="{{ url_for('multi_demo') }}">
@@ -88,8 +88,11 @@
                                 </div>
                             {% endif %}
                         {% else %}
-                            <div class="fw-bold text-secondary">未作成</div>
-                            <div class="small text-muted">まだカレンダーに作成されていません。</div>
+                            <div class="fw-bold">{{ row.summary }}</div>
+                            <div class="small text-muted">{{ row.planned_time_label }}</div>
+                            <div class="small text-muted">{{ row.location }}</div>
+                            <div class="small text-muted">{{ row.description|nl2br }}</div>
+                            <div class="small text-muted mt-2">CSV / XLSX から読み込んだ予定案です。まだカレンダーには作成されていません。</div>
                         {% endif %}
                     </td>
                     <td>
@@ -106,7 +109,7 @@
                             {% endif %}
                         {% else %}
                             <div class="fw-bold text-secondary">未同期</div>
-                            <div class="small text-muted">まずはデモ予定を生成してください。</div>
+                            <div class="small text-muted">表示中の予定案をカレンダーへ流し込むには、生成ボタンを押してください。</div>
                         {% endif %}
                     </td>
                     <td class="text-end">

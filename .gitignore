@@ -45,6 +45,7 @@ htmlcov/
 # エディタ関連
 .idea/
 .vscode/
+.codex
 *.swp
 *.swo
 *~

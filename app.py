@@ -12,7 +12,7 @@ from core.auth import get_calendar_manager, get_spreadsheet_manager, requires_au
 from core.constants import JST
 from core.multi_demo_service import build_multi_demo_rows, create_multi_demo_events, flush_future_events
 from core.spreadsheet_demo_service import build_spreadsheet_demo_rows, create_spreadsheet_demo_events
-from core.runtime import resource_path
+from core.runtime import is_pyinstaller_environment, resource_path
 
 
 # .envファイルから環境変数を読み込む
@@ -423,4 +423,8 @@ except Exception:
 
 
 if __name__ == "__main__":
-    app.run(debug=DEBUG)
+    run_options = {"debug": DEBUG}
+    if is_pyinstaller_environment():
+        run_options = {"debug": False, "use_reloader": False}
+
+    app.run(**run_options)
